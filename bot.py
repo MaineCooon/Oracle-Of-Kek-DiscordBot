@@ -3,12 +3,10 @@ import asyncio
 import shlex
 
 import config
-from commands import PingCommand
+import commands
 
 client = discord.Client()
 prefix = config.prefix
-
-commands = ["ping"] # TODO temporary
 
 async def process_message(msg):
     # If message doesn't start with bot prefix, stop here
@@ -21,15 +19,30 @@ async def process_message(msg):
     cmdText = msgArr[0][len(prefix):]
     args = msgArr[1:] if len(msgArr) > 1 else []
 
-    if not (cmdText in commands):
+    if not (cmdText in commands.commands):
         return
 
-    # TODO temporary
-    c = PingCommand(client)
-    args = {
-        "channel": msg.channel
-    }
-    await c.execute(args)
+    if cmdText == "ping":
+        # TODO temporary
+        c = commands.PingCommand(client)
+        args = {
+            "channel": msg.channel
+        }
+        await c.execute(args)
+
+    if cmdText == "donate":
+        c = commands.DonateCommand(client)
+        args = {
+            "msg": msg
+        }
+        await c.execute(args)
+
+    if cmdText == "commands":
+        c = commands.CommandsCommand(client)
+        args = {
+            "msg": msg
+        }
+        await c.execute(args)
 
     # TODO continue here
 
