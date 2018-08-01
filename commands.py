@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import database # TODO probably remove (or make more specific) later
+
 command_list = []
 command_names = []
 
@@ -33,6 +35,32 @@ class Command(ABC):
     @abstractmethod
     async def execute(self, msg, args):
         pass
+
+# TODO also a temporary command for testing, it makes the user who sent
+#      the message an 'Admin' in the Admin table
+@command
+class AddAdminCommand(Command):
+    name = "addadmin"
+    description = "why did I make descriptions mandatory"
+
+    def __init__(self, client):
+        super().__init__(client)
+
+    async def execute(self, msg, args):
+        # TODO run check on if they're already an admin and if so tell them no
+        database.add_admin(msg.author)
+
+# # TODO TEMPORARY CLASS FOR TESTING
+# @command
+# class AddCommand(Command):
+#     name = "add"
+#     description = "reet"
+#
+#     def __init__(self, client):
+#         super().__init__(client)
+#
+#     async def execute(self, msg, args):
+#         test_function()
 
 @command
 class PingCommand(Command):
