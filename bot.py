@@ -3,7 +3,7 @@ import asyncio
 import shlex
 
 import config
-import commands
+from commands import command_list, command_names, get_command_instance_by_name
 
 client = discord.Client()
 prefix = config.prefix
@@ -16,35 +16,17 @@ async def process_message(msg):
     # Split message by spaces
     msgArr = shlex.split(msg.content)
     # Separate command and args
-    cmdText = msgArr[0][len(prefix):]
+    cmdText = msgArr[0][len(prefix):].lower()
     args = msgArr[1:] if len(msgArr) > 1 else []
 
-    if not (cmdText in commands.commands):
+    if not (cmdText in command_names):
         return
 
-    if cmdText == "ping":
-        # TODO temporary
-        c = commands.PingCommand(client)
-        args = {
-            "channel": msg.channel
-        }
-        await c.execute(args)
+    # Proceed to process command
 
-    if cmdText == "donate":
-        c = commands.DonateCommand(client)
-        args = {
-            "msg": msg
-        }
-        await c.execute(args)
-
-    if cmdText == "commands":
-        c = commands.CommandsCommand(client)
-        args = {
-            "msg": msg
-        }
-        await c.execute(args)
-
-    # TODO continue here
+    c = get_command_instance_by_name(cmdText, client)
+    if bool(c):         # Ensures c actually exists
+        await c.execute(msg, args)
 
 @client.event
 async def on_ready():

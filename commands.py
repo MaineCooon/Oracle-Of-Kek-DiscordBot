@@ -1,10 +1,18 @@
 from abc import ABC, abstractmethod
 
-commands = []
+command_list = []
+command_names = []
+
+def get_command_instance_by_name(command_name, client):
+    for c in command_list:
+        if command_name.lower() == c.name:
+            return c(client)
+    return False
 
 def command(cmd):
     print(cmd.name) # TODO remove
-    commands.append(cmd.name)
+    command_list.append(cmd)
+    command_names.append(cmd.name.lower())
     return cmd
 
 # Abstract parent class for all commands
@@ -23,12 +31,8 @@ class Command(ABC):
         pass
 
     @abstractmethod
-    async def execute(self, args):
+    async def execute(self, msg, args):
         pass
-
-    @classmethod
-    def getCommandInstanceByName(command_name):
-        pass # TODO
 
 @command
 class PingCommand(Command):
@@ -38,10 +42,8 @@ class PingCommand(Command):
     def __init__(self, client):
         super().__init__(client)
 
-    # Args needed:
-    # - channel
-    async def execute(self, args):
-        await self.client.send_message(args["channel"], "Pong!")
+    async def execute(self, msg, args):
+        await self.client.send_message(msg.channel, "Pong!")
 
 @command
 class DonateCommand(Command):
@@ -51,11 +53,9 @@ class DonateCommand(Command):
     def __init__(self, client):
         super().__init__(client)
 
-    # Requires args:
-    # - msg
-    async def execute(self, args):
-        await self.client.send_typing(args["msg"].channel)
-        await self.client.send_message(args["msg"].channel, "YEET")
+    async def execute(self, msg, args):
+        await self.client.send_typing(msg.channel)
+        await self.client.send_message(msg.channel, "YEET")
 
 @command
 class CommandsCommand(Command):
@@ -65,6 +65,9 @@ class CommandsCommand(Command):
     def __init__(self, client):
         super().__init__(client)
 
-    async def execute(self, args):
-        string = ", ".join(commands)
-        await self.client.send_message(args["msg"].channel, string)
+    async def execute(self, msg, args):
+        arr = []
+        for c in command_names:
+            arr.append(c)
+        string = ", ".join(arr)
+        await self.client.send_message(msg.channel, string)
