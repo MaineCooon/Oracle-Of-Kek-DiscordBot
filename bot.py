@@ -16,6 +16,11 @@ async def process_message(msg):
         return
 
     # Split message by spaces
+    # TODO CURRENTLY SPLITS ARGS EVEN FOR COMMANDS THAT ONLY TAKE ONE ARG WHICH
+    #      MAY HAVE SPACES (e.g. addkek).  EVEN WHEN REJOINING THE ARGS SHLEX
+    #      REMOVES ANY QUOTATION MARKS.  FIX THIS.  (probably make a more robust
+    #      system that only splits the args in the first place if the command
+    #      takes multiple args?)
     msgArr = shlex.split(msg.content)
     # Separate command and args
     cmdText = msgArr[0][len(prefix):].lower()
@@ -28,7 +33,10 @@ async def process_message(msg):
 
     c = get_command_instance_by_name(cmdText, client)
     if bool(c):         # Ensures c actually exists
-        await c.execute(msg, args)
+        if not c.check_privs(msg.author):
+            await client.send_message(msg.channel, "Insufficient Privileges")
+        else:
+            await c.execute(msg, args)
 
 @client.event
 async def on_ready():
