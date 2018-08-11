@@ -48,7 +48,19 @@ class AddAdminCommand(Command):
 
     async def execute(self, msg, args):
         # TODO run check on if they're already an admin and if so tell them no
-        database.add_admin(msg.author)
+        database.make_admin(msg.author)
+
+# TODO temporary
+@command
+class AddUserCommand(Command):
+    name = "adduser"
+    description = "seriously why"
+
+    def __init__(self, client):
+        super().__init__(client)
+
+    async def execute(self, msg, args):
+        database.add_user(msg.author)
 
 # # TODO TEMPORARY CLASS FOR TESTING
 # @command

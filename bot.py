@@ -32,6 +32,7 @@ async def process_message(msg):
 
 @client.event
 async def on_ready():
+    await client.change_presence(game=discord.Game(name="Online"))
     print("Connected Successfully")
 
 @client.event
