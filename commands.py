@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 
 import database # TODO probably remove (or make more specific) later
+import templates
+import kekcoin
 
 command_list = []
 command_names = []
@@ -128,13 +130,24 @@ class AddKekCommand(Command):
         return database.is_admin(discord_user)
 
     async def execute(self, msg, args):
-        if len(args) < 1:
-            await self.client.send_message(msg.channel, "Must have args")
+        await self.client.send_message(msg.channel, templates.await_kek_message.format(user=msg.author.display_name))
+        response = await self.client.wait_for_message(timeout=20, author=msg.author)
+        if response == None:
+            await self.client.send_message(msg.channel, "Took longer than 20 seconds, cancelled.")
+            return
+        elif response.content.lower() == "stop":
+            await self.client.send_message(msg.channel, "Stopped.  :P")
             return
 
-        submission = " ".join(args)
-        database.add_kek(msg.author, submission)
-        await self.client.send_message(msg.channel, "Added!")
+        database.add_kek(msg.author, response.content)
+        await self.client.send_message(msg.channel, "Added kek '{kek}'".format(kek=response.content))
+        # if len(args) < 1:
+        #     await self.client.send_message(msg.channel, "Must have args")
+        #     return
+        #
+        # submission = " ".join(args)
+        # database.add_kek(msg.author, submission)
+        # await self.client.send_message(msg.channel, "Added!")
 
 @command
 class PingCommand(Command):
@@ -158,6 +171,21 @@ class DonateCommand(Command):
     async def execute(self, msg, args):
         await self.client.send_typing(msg.channel)
         await self.client.send_message(msg.channel, "YEET")
+
+@command
+class SupplyCommand(Command):
+    name = "supply"
+    description = "asidjfosidf"
+
+    def __init__(self, client):
+        super().__init__(client)
+
+    async def execute(self, msg, args):
+        await self.client.send_typing(msg.channel)
+        result = kekcoin.get_supply() # TODO error checking etc
+        supply = "{:,}".format(result)
+        send = templates.display_supply_message.format(supply=supply)
+        await self.client.send_message(msg.channel, send)
 
 @command
 class CommandsCommand(Command):
