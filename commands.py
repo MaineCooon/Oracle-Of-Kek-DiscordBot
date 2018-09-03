@@ -7,11 +7,11 @@ import kekcoin
 command_list = []
 command_names = []
 
-def get_command_instance_by_name(command_name, client):
+def get_command_instance_by_name(command_name, bot):
     command_name = command_name.lower()
     for c in command_list:
         if command_name == c.name:
-            return c(client)
+            return c(bot.client)
     return False
 
 def get_command_by_name(command_name):
@@ -56,10 +56,6 @@ class HelpCommand(Command):
     name = "help"
     description = "help command"
 
-    # TODO check if you even need these constructors on all these child classes
-    def __init__(self, client):
-        super().__init__(client)
-
     async def execute(self, msg, args):
         if len(args) != 1 or not args[0].lower() in command_names:
             await self.client.send_message(msg.channel, "Must provide one existent command")
@@ -74,9 +70,6 @@ class AddAdminCommand(Command):
     name = "addadmin"
     description = "why did I make descriptions mandatory"
 
-    def __init__(self, client):
-        super().__init__(client)
-
     async def execute(self, msg, args):
         # TODO run check on if they're already an admin and if so tell them no
         database.make_admin(msg.author)
@@ -87,9 +80,6 @@ class DemoteAdminCommand(Command):
     name = "demoteadmin"
     description = "demote admin"
 
-    def __init__(self, client):
-        super().__init__(client)
-
     async def execute(self, msg, args):
         database.remove_admin(msg.author)
 
@@ -98,9 +88,6 @@ class DemoteAdminCommand(Command):
 class AddUserCommand(Command):
     name = "adduser"
     description = "seriously why"
-
-    def __init__(self, client):
-        super().__init__(client)
 
     async def execute(self, msg, args):
         database.add_user(msg.author)
@@ -111,9 +98,6 @@ class IsAdminCommand(Command):
     name = "isadmin"
     description = "debug command"
 
-    def __init__(self, client):
-        super().__init__(client)
-
     async def execute(self, msg, args):
         await self.client.send_message(msg.channel, database.is_admin(msg.author))
 
@@ -122,9 +106,6 @@ class IsAdminCommand(Command):
 class AddKekCommand(Command):
     name = "addkek"
     description = "add kek quote"
-
-    def __init__(self, client):
-        super().__init__(client)
 
     def check_privs(self, discord_user):
         return database.is_admin(discord_user)
@@ -154,9 +135,6 @@ class PingCommand(Command):
     name = "ping"
     description = "Ping pong!"
 
-    def __init__(self, client):
-        super().__init__(client)
-
     async def execute(self, msg, args):
         await self.client.send_message(msg.channel, "Pong!")
 
@@ -165,20 +143,14 @@ class DonateCommand(Command):
     name = "donate"
     description = "DONATE DESCRIPTION"
 
-    def __init__(self, client):
-        super().__init__(client)
-
     async def execute(self, msg, args):
         await self.client.send_typing(msg.channel)
-        await self.client.send_message(msg.channel, "YEET")
+        await self.client.send_message(msg.channel, "YEET") # TODO fix this
 
 @command
 class SupplyCommand(Command):
     name = "supply"
     description = "asidjfosidf"
-
-    def __init__(self, client):
-        super().__init__(client)
 
     async def execute(self, msg, args):
         await self.client.send_typing(msg.channel)
@@ -188,12 +160,17 @@ class SupplyCommand(Command):
         await self.client.send_message(msg.channel, send)
 
 @command
+class PriceCommand(Command):
+    name = "price"
+    description = "asjdfo"
+
+    async def execute(self, msg, args):
+        pass
+
+@command
 class CommandsCommand(Command):
     name = "commands"
     description = "LIST COMMANDS"
-
-    def __init__(self, client):
-        super().__init__(client)
 
     async def execute(self, msg, args):
         arr = []
