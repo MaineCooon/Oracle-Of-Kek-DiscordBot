@@ -1,10 +1,12 @@
 import discord
 import asyncio
 import shlex
+import sys
 
 import config
-from database import create_db_tables
-from commands import command_list, command_names, get_command_instance_by_name
+import commands
+from core.database import create_db_tables
+from helpers.cmd import *
 
 client = discord.Client()
 prefix = config.prefix

@@ -6,3 +6,5 @@ db_port = 3306
 mysql_db_name = "kekbot_db"
 mysql_db_username = "kekbot_db"
 mysql_db_password = "your_password"
+
+cryptopia_api_key = "your_api_key"
