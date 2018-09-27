@@ -48,6 +48,11 @@ def add_user(discord_user, is_admin=False):
         return new_user
     return False
 
+def add_meme(discord_user, img_url):
+    new_meme = Meme.create(added_by_id=discord_user.id, img_url=img_url)
+    new_meme.save()
+    return new_meme
+
 def make_admin(discord_user):
     new_admin = get_user_model(discord_user)
     if new_admin == None:
