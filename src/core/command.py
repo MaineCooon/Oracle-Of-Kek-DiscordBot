@@ -4,9 +4,6 @@ from helpers.cmd import register_command
 
 def command(cmd):
     register_command(cmd)
-    # print(cmd.name) # TODO remove
-    # command_list.append(cmd)
-    # command_names.append(cmd.name.lower())
     return cmd
 
 # Abstract parent class for all commands

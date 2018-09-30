@@ -1,15 +1,16 @@
 import discord
 import asyncio
 import shlex
-import sys
 
 import config
 import commands
-from core.database import create_db_tables
+import templates
+from core.database import create_db_tables, get_server_model
 from helpers.cmd import *
 
 client = discord.Client()
 prefix = config.prefix
+log_channel = config
 create_db_tables() # TODO probably won't stay in this file
 
 async def process_message(msg):
@@ -38,7 +39,8 @@ async def process_message(msg):
     c = get_command_instance_by_name(cmdText, client)
     if bool(c):         # Ensures c actually exists
         if not c.check_privs(msg.author):
-            await client.send_message(msg.channel, "Insufficient Privileges")
+            await client.send_typing(msg.channel)
+            await client.send_message(msg.channel, "Insufficient privileges for this command.")
         else:
             await c.execute(msg, args)
 
@@ -50,5 +52,33 @@ async def on_ready():
 @client.event
 async def on_message(msg):
     await process_message(msg)
+
+@client.event
+async def on_member_join(member):
+    channels = member.server.channels
+    server_model = get_server_model(member.server)
+
+    welcome_channel = None
+
+    # If the server has a welcome channel saved, retrieve it, and make sure
+    #    it is both valid, and we have permission to send messages in it
+    if server_model != None:
+        if server_model.welcome_channel_id != None:
+            c = member.server.get_channel(server_model.welcome_channel_id)
+            if c != None:
+                if c.permissions_for(member.server.me).send_messages:
+                    welcome_channel = c
+
+    # If there wasn't a saved welcome channel that could be used, select a
+    #    channel arbitrarily
+    if welcome_channel == None:
+        for c in channels:
+            if c.permissions_for(member.server.me).send_messages:
+                welcome_channel = c
+                break
+
+    if welcome_channel != None:
+        await client.send_typing(c)
+        await client.send_message(c, templates.welcome_message.format(username_tag=member.mention))
 
 client.run(config.token)

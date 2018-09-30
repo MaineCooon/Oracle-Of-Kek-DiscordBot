@@ -1,16 +1,12 @@
-from abc import ABC, abstractmethod
 import requests
+from abc import ABC, abstractmethod
 from io import BytesIO
 from discord import MessageType
-
-# from pprint import pprint
-# from inspect import getmembers
-
-from core.command import *
 
 import core.database as database
 import templates
 import config
+from core.command import *
 
 # Parent class for all !add commands
 class AddCommand(Command, ABC):

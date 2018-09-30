@@ -1,8 +1,9 @@
 from core.command import *
 
-from helpers.cmd import command_names, get_command_by_name
+from helpers.cmd import command_list, command_names, get_command_by_name
 
 import core.database as database # TODO probably remove (or make more specific) later
+import templates
 
 @command
 class HelpCommand(Command):
@@ -31,10 +32,12 @@ class CommandsCommand(Command):
 
     async def execute(self, msg, args):
         arr = []
-        for c in command_names:
-            arr.append(c)
-        string = ", ".join(arr)
-        await self.client.send_message(msg.channel, string)
+        for c in command_list:
+            if c.check_privs(c, msg.author):
+                arr.append(c.name)
+        arr = sorted(arr)
+        send = ", ".join(arr)
+        await self.client.send_message(msg.channel, send)
 
 # TODO also a temporary command for testing, it makes the user who sent
 #      the message an 'Admin' in the Admin table
@@ -44,8 +47,21 @@ class AddAdminCommand(Command):
     description = "why did I make descriptions mandatory"
 
     async def execute(self, msg, args):
-        # TODO run check on if they're already an admin and if so tell them no
-        database.make_admin(msg.author)
+        await self.client.send_typing(msg.channel)
+
+        new_admin = msg.author
+
+        # If they mentioned a channel, set welcome channel to that
+        if len(args) > 0:
+            for m in msg.server.members:
+                if args[0] == m.mention:
+                    new_admin = m
+                    break
+
+        database.make_admin(new_admin)
+        await self.client.send_message(msg.channel, templates.admin_added_message \
+            .format(username_tag=new_admin.mention))
+
 
 # TODO temporary
 @command
@@ -73,3 +89,26 @@ class IsAdminCommand(Command):
 
     async def execute(self, msg, args):
         await self.client.send_message(msg.channel, database.is_admin(msg.author))
+
+@command
+class SetWelcomeChannel(Command):
+    name = "setwelcomechannel"
+    description = "Set welcome channel to this channel."
+
+    def check_privs(self, discord_user):
+        return database.is_admin(discord_user)
+
+    async def execute(self, msg, args):
+        await self.client.send_typing(msg.channel)
+
+        welcome_channel = msg.channel
+
+        # If they mentioned a channel, set welcome channel to that
+        if len(args) > 0:
+            for c in msg.server.channels:
+                if args[0] == c.mention:
+                    welcome_channel = c
+                    break
+
+        database.set_welcome_channel(welcome_channel)
+        await self.client.send_message(msg.channel, "Welcome channel set!")

@@ -1,8 +1,5 @@
-from core.command import *
-
-import core.kekcoin as kekcoin
 import templates
-
+from core.command import *
 from core.kekcoin import KekCoin
 
 kekcoin = KekCoin()

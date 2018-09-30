@@ -22,7 +22,7 @@ def close_db():
 def create_db_tables():
     # create_tables() does safe creation by default, and will simply not create
     # table if it already exists
-    db.create_tables([User, Meme, Gif, Advice, Trump, Kek])
+    db.create_tables([User, Server, Meme, Gif, Advice, Trump, Kek])
 
 def add_admin(user):
     if Admin.get_or_none(Admin.discord_id == user.id) == None:
@@ -32,8 +32,14 @@ def add_admin(user):
 def get_user_model(discord_user):
     return User.get_or_none(User.discord_id == discord_user.id)
 
+def get_server_model(discord_server):
+    return Server.get_or_none(Server.server_id == discord_server.id)
+
 def does_user_exist(discord_user):
     return not User.get_or_none(User.discord_id == discord_user.id) == None
+
+def does_server_exist(discord_server):
+    return not Server.get_or_none(Server.server_id == discord_server.id) == None
 
 # Returns created User model if successful, else false
 def add_user(discord_user, is_admin=False):
@@ -42,6 +48,33 @@ def add_user(discord_user, is_admin=False):
         new_user.save()
         return new_user
     return False
+
+# Returns created Server model if successful, else false
+def add_server(discord_server, welcome_channel_id=None):
+    if not does_server_exist(discord_server):
+        new_server = Server.create(server_id=discord_server.id, welcome_channel_id=welcome_channel_id)
+        new_server.save()
+        return new_server
+    return False
+
+def set_welcome_channel(channel):
+    server_model = get_server_model(channel.server)
+    if server_model == None:
+        add_server(channel.server, welcome_channel_id = channel.id)
+    else:
+        q = Server.update({Server.welcome_channel_id: channel.id}).where(Server.server_id == channel.server.id)
+        q.execute()
+
+    # if does_server_exist(channel.server):
+    #
+    #
+    #     def make_admin(discord_user):
+    #         new_admin = get_user_model(discord_user)
+    #         if new_admin == None:
+    #             add_user(discord_user, is_admin=True)
+    #         else:
+    #             q = User.update({User.is_admin: True}).where(User.discord_id == discord_user.id)
+    #             q.execute()
 
 def add_meme(discord_user, img_url):
     new_meme = Meme.create(added_by_id=discord_user.id, img_url=img_url)
@@ -105,6 +138,13 @@ def is_admin(discord_user):
 class User(Model):
     discord_id = CharField()
     is_admin = BooleanField(default=False)
+    deposit_address = CharField(null=True)
+    class Meta:
+        database = db
+
+class Server(Model):
+    server_id = CharField()
+    welcome_channel_id = CharField(null=True)
     class Meta:
         database = db
 

@@ -36,23 +36,6 @@ class KekCoin():
         high_24h = crypt_ticker['info']['High']
         change_24h = crypt_ticker['info']['Change']
 
-        # Debug printing
-        # print("price_btc:  " + str(price_btc) )
-        # print("price_usd:  " + str(price_usd) )
-        # print("volume:     " + str(volume) )
-        # print("low_24h:    " + str(low_24h) )
-        # print("high_24h:   " + str(high_24h) )
-        # print("change_24h: " + str(change_24h) )
-        #
-        # print()
-        #
-        # print("price_btc:  " + "{0:.8f}".format(price_btc) )
-        # print("price_usd:  " + "{0:.2f}".format(price_usd) )
-        # print("volume:     " + "{0:.2f}".format(volume) )
-        # print("low_24h:    " + "{0:.8f}".format(low_24h) )
-        # print("high_24h:   " + "{0:.8f}".format(high_24h) )
-        # print("change_24h: " + "{0:.2f}".format(change_24h) )
-
         price = {
             'price_btc': price_btc,
             'price_usd': price_usd,

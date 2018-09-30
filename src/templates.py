@@ -1,6 +1,11 @@
 from config import add_row_timeout
 
+welcome_message = "Welcome {username_tag}!  Praise KeK!"
 
+donate_message = "If you would like to support KekCoin you can contribute to " \
+    "the following addresses:\n\nBTC:\nKEK:"
+
+admin_added_message = "{username_tag} added as an admin!"
 
 display_supply_message = "{supply} KEK"
 supply_unavailable_message = "Sorry!  Unable to retrieve supply information."
@@ -24,8 +29,6 @@ display_mcap_message = \
     "${mcap_usd} | {mcap_btc} BTC\n" \
     "Position: {position}"
 mcap_unavailable_message = "Sorry!  Unable to retrieve mcap information."
-
-welcome_message = "Welcome {username_tag}!  Praise KeK!"
 
 add_cancelled_message = "Took longer than {timeout} seconds, cancelled." \
         .format(timeout=add_row_timeout)
