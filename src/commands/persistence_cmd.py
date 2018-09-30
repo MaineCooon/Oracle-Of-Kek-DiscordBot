@@ -15,10 +15,6 @@ import config
 # Parent class for all !add commands
 class AddCommand(Command, ABC):
 
-    def __init__(self, client):
-        super().__init__(client)
-        self.timeout = config.add_row_timeout # Add timeout to class properties
-
     @abstractmethod
     def _is_valid_submission(self, msg):
         pass

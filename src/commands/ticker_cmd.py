@@ -53,8 +53,21 @@ class BlockchainCommand(Command):
     description = "blockchain command"
 
     async def execute(self, msg, args):
-        # TODO implement !blockchain
-        await self.client.send_message(msg.channel, "Coming soon...")
+        await self.client.send_typing(msg.channel)
+
+        try:
+            result = kekcoin.blockchain
+            send = templates.display_blockchain_message.format(
+                block_count     = "{0:,g}".format(result['block_count']),
+                staking_weight  = result['staking_weight'],
+                staking_reward  = result['staking_reward'],
+                difficulty      = "{0:.8f}".format(result['difficulty']),
+                blockchain_size = result['blockchain_size']
+            )
+        except:
+            send = templates.blockchain_unavailable_message
+
+        await self.client.send_message(msg.channel, send)
 
 @command
 class McapCommand(Command):
@@ -62,5 +75,16 @@ class McapCommand(Command):
     description = "mcap command"
 
     async def execute(self, msg, args):
-        # TODO implement !mcap
-        await self.client.send_message(msg.channel, "Coming soon...")
+        await self.client.send_typing(msg.channel)
+
+        try:
+            result = kekcoin.mcap
+            send = templates.display_mcap_message.format(
+                mcap_usd = "{0:,.2f}".format(result['mcap_usd']),
+                mcap_btc = "{0:.2f}".format(result['mcap_btc']),
+                position = "{0:g}".format(result['position'])
+            )
+        except:
+            send = templates.mcap_unavailable_message
+
+        await self.client.send_message(msg.channel, send)

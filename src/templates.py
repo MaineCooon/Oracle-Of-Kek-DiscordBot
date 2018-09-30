@@ -12,6 +12,19 @@ display_price_message = \
     "24h Change: {change_24h}%"
 price_unavailable_message = "Sorry!  Unable to retrieve price information."
 
+display_blockchain_message = \
+    "Block Count: {block_count}\n" \
+    "Staking Weight: {staking_weight}\n" \
+    "Staking Reward: {staking_reward}\n" \
+    "Difficulty: {difficulty}\n" \
+    "Blockchain Size: {blockchain_size}"
+blockchain_unavailable_message = "Sorry!  Unable to retrieve blockchain information."
+
+display_mcap_message = \
+    "${mcap_usd} | {mcap_btc} BTC\n" \
+    "Position: {position}"
+mcap_unavailable_message = "Sorry!  Unable to retrieve mcap information."
+
 welcome_message = "Welcome {username_tag}!  Praise KeK!"
 
 add_cancelled_message = "Took longer than {timeout} seconds, cancelled." \

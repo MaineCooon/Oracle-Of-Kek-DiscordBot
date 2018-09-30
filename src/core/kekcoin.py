@@ -1,11 +1,12 @@
 import ccxt
-
+import requests
 from random import randint
 
 from config import cryptopia_api_key
 
 cryptopia = ccxt.cryptopia()
 cmc = ccxt.coinmarketcap()
+exp_url = "http://explorer.kekcoin.co/api/"
 
 symbol = 'KEK/BTC'
 
@@ -62,3 +63,37 @@ class KekCoin():
         }
 
         return price
+
+    @property
+    def blockchain(self):
+        block_count = float( requests.get("{}/getblockcount".format(exp_url)).text )
+        staking_weight = 'TBA'
+        staking_reward = 'TBA'
+        difficulty = float( requests.get("{}/getdifficulty".format(exp_url)).text )
+        blockchain_size = 'TBA'
+
+        blockchain_info = {
+            'block_count': block_count,
+            'staking_weight': staking_weight,
+            'staking_reward': staking_reward,
+            'difficulty': difficulty,
+            'blockchain_size': blockchain_size
+        }
+
+        return blockchain_info
+
+    @property
+    def mcap(self):
+        cmc_ticker = self._cmc.fetch_ticker(symbol)
+
+        mcap_usd = float( cmc_ticker['info']['market_cap_usd'] )
+        mcap_btc = float( cmc_ticker['info']['market_cap_btc'] )
+        position = float( cmc_ticker['info']['rank'] )
+
+        mcap_info = {
+            'mcap_usd': mcap_usd,
+            'mcap_btc': mcap_btc,
+            'position': position
+        }
+
+        return mcap_info
