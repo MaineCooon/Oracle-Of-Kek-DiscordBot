@@ -3,3 +3,4 @@ ccxt==1.17.321
 discord==0.0.2
 peewee==3.7.0
 PyMySQL==0.9.2
+requests==2.19.1

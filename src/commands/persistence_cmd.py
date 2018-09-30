@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 import requests
 from io import BytesIO
+from discord import MessageType
 
-from pprint import pprint
-from inspect import getmembers
+# from pprint import pprint
+# from inspect import getmembers
 
 from core.command import *
 
@@ -18,11 +19,6 @@ class AddCommand(Command, ABC):
         super().__init__(client)
         self.timeout = config.add_row_timeout # Add timeout to class properties
 
-    @property
-    @abstractmethod
-    def _await_message(self):
-        pass
-
     @abstractmethod
     def _is_valid_submission(self, msg):
         pass
@@ -35,10 +31,6 @@ class AddCommand(Command, ABC):
     async def _display_submission(self, msg):
         pass
 
-    @property
-    def _add_cancelled_message(self):
-        return templates.add_cancelled_message
-
     # All !add commands require admin privileges
     def check_privs(self, discord_user):
         return database.is_admin(discord_user)
@@ -49,7 +41,7 @@ class AddCommand(Command, ABC):
         # Ask user to send new submission
 
         await self.client.send_typing(channel)
-        await self.client.send_message(channel, self._await_message)
+        await self.client.send_message(channel, templates.await_submission_message)
 
         # Wait for next message from user (with a timeout period set in config)
 
@@ -115,97 +107,101 @@ class AddCommand(Command, ABC):
             # If it failed, say so
             send = templates.submission_failed_message
 
-        await self.client.edit_message(confirmation, send)
-
-
-
-            # url = response.attachments[0]['url']
-            # img = requests.get(url).content
-            # database.add_meme(msg.author, url)
-            # await self.client.send_file(channel, BytesIO(img), filename="meme.png")
+        try:
+            await self.client.edit_message(confirmation, send)
+        except:
+            # If confirmation is turned off, a new message will need to be
+            #    sent instead of editing the old one
+            await self.client.send_message(msg.channel, send)
 
 
 # TODO probably needs cleanup later
 @command
-class AddKekCommand(Command):
+class AddKekCommand(AddCommand):
     name = "addkek"
     description = "add kek quote"
 
-    def check_privs(self, discord_user):
-        return database.is_admin(discord_user)
+    def _is_valid_submission(self, msg):
+        return msg.type == MessageType.default and len(msg.content) > 0
 
-    async def execute(self, msg, args):
-        await self.client.send_message(msg.channel, templates.await_kek_message.format(user=msg.author.display_name))
-        response = await self.client.wait_for_message(timeout=config.add_row_timeout, author=msg.author)
-        if response == None:
-            await self.client.send_message(msg.channel, templates.add_kek_cancelled_message)
-            return
-        elif response.content.lower() == "stop":
-            await self.client.send_message(msg.channel, "Stopped.  :P")
-            return
+    def _submit_to_database(self, msg):
+        database.add_kek(msg.author, msg.content)
 
-        # TODO Add second check where user can verify quote is correct
-        database.add_kek(msg.author, response.content)
-        await self.client.send_message(msg.channel, "Added kek '{kek}'".format(kek=response.content))
-        # if len(args) < 1:
-        #     await self.client.send_message(msg.channel, "Must have args")
-        #     return
-        #
-        # submission = " ".join(args)
-        # database.add_kek(msg.author, submission)
-        # await self.client.send_message(msg.channel, "Added!")
+    async def _display_submission(self, msg):
+        return await self.client.send_message(msg.channel, msg.content)
+
 
 @command
 class AddMemeCommand(AddCommand):
     name = "addmeme"
     description = "add meme"
 
-    _await_message = "awaiting meme"
-
     def _is_valid_submission(self, msg):
+        try:
+            # Make sure submission includes an image
+            url = msg.attachments[0]['url']
+        except:
+            return False
         return True
 
     def _submit_to_database(self, msg):
         url = msg.attachments[0]['url']
         database.add_meme(msg.author, url)
-        # url = response.attachments[0]['url']
-        # img = requests.get(url).content
-        # database.add_meme(msg.author, url)
-        # await self.client.send_file(channel, BytesIO(img), filename="meme.png")
 
     async def _display_submission(self, msg):
         url = msg.attachments[0]['url']
         img = requests.get(url).content
-        # database.add_meme(msg.author, url)
         return await self.client.send_file(msg.channel, BytesIO(img), filename="meme.png")
 
-    # async def execute(self, msg, args):
-    #     # TODO implement !addmeme
-    #     await self.client.send_message(msg.channel, "Coming soon...")
-
 @command
-class AddGifCommand(Command):
+class AddGifCommand(AddCommand):
     name = "addgif"
     description = "add gif"
 
-    async def execute(self, msg, args):
-        # TODO implement !addgif
-        await self.client.send_message(msg.channel, "Coming soon...")
+    def _is_valid_submission(self, msg):
+        try:
+            # Make sure submission includes an image
+            url = msg.attachments[0]['url']
+        except:
+            return False
+        return True
+
+    def _submit_to_database(self, msg):
+        url = msg.attachments[0]['url']
+        # TODO these database submission functions need try/catch wrappers
+        database.add_gif(msg.author, url)
+
+    async def _display_submission(self, msg):
+        url = msg.attachments[0]['url']
+        img = requests.get(url).content
+        return await self.client.send_file(msg.channel, BytesIO(img), filename="gif.gif")
+
 
 @command
-class AddAdviceCommand(Command):
+class AddAdviceCommand(AddCommand):
     name = "addadvice"
     description = "add advice"
 
-    async def execute(self, msg, args):
-        # TODO implement !addadvice
-        await self.client.send_message(msg.channel, "Coming soon...")
+    def _is_valid_submission(self, msg):
+        return msg.type == MessageType.default and len(msg.content) > 0
+
+    def _submit_to_database(self, msg):
+        database.add_advice(msg.author, msg.content)
+
+    async def _display_submission(self, msg):
+        return await self.client.send_message(msg.channel, msg.content)
+
 
 @command
-class AddTrumpCommand(Command):
+class AddTrumpCommand(AddCommand):
     name = "addtrump"
     description = "add trump"
 
-    async def execute(self, msg, args):
-        # TODO implement !addtrump
-        await self.client.send_message(msg.channel, "Coming soon...")
+    def _is_valid_submission(self, msg):
+        return msg.type == MessageType.default and len(msg.content) > 0
+
+    def _submit_to_database(self, msg):
+        database.add_trump(msg.author, msg.content)
+
+    async def _display_submission(self, msg):
+        return await self.client.send_message(msg.channel, msg.content)

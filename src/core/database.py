@@ -22,17 +22,12 @@ def close_db():
 def create_db_tables():
     # create_tables() does safe creation by default, and will simply not create
     # table if it already exists
-    db.create_tables([User, Meme, Advice, Trump, Kek])
+    db.create_tables([User, Meme, Gif, Advice, Trump, Kek])
 
 def add_admin(user):
     if Admin.get_or_none(Admin.discord_id == user.id) == None:
         new_admin = Admin.create(discord_id=user.id)
         new_admin.save()
-
-# TODO check if this function looks okay later
-def add_kek(discord_user, submission):
-    new_kek = Kek.create(added_by_id=discord_user.id, quote=submission)
-    new_kek.save()
 
 def get_user_model(discord_user):
     return User.get_or_none(User.discord_id == discord_user.id)
@@ -53,6 +48,41 @@ def add_meme(discord_user, img_url):
     new_meme.save()
     return new_meme
 
+def add_gif(discord_user, img_url):
+    new_gif = Gif.create(added_by_id=discord_user.id, img_url=img_url)
+    new_gif.save()
+    return new_gif
+
+def add_kek(discord_user, submission):
+    new_kek = Kek.create(added_by_id=discord_user.id, submission=submission)
+    new_kek.save()
+    return new_kek
+
+def add_trump(discord_user, submission):
+    new_trump = Trump.create(added_by_id=discord_user.id, submission=submission)
+    new_trump.save()
+    return new_trump
+
+def add_advice(discord_user, submission):
+    new_advice = Advice.create(added_by_id=discord_user.id, submission=submission)
+    new_advice.save()
+    return new_advice
+
+def get_memes():
+    return Meme.select()
+
+def get_keks():
+    return Kek.select()
+
+def get_gifs():
+    return Gif.select()
+
+def get_trumps():
+    return Trump.select()
+
+def get_advices():
+    return Advice.select()
+
 def make_admin(discord_user):
     new_admin = get_user_model(discord_user)
     if new_admin == None:
@@ -70,7 +100,7 @@ def remove_admin(discord_user):
 
 def is_admin(discord_user):
     model = get_user_model(discord_user)
-    return model.is_admin
+    return False if model == None else model.is_admin
 
 class User(Model):
     discord_id = CharField()
@@ -84,21 +114,27 @@ class Meme(Model):
     class Meta:
         database = db
 
+class Gif(Model):
+    added_by_id = CharField()
+    img_url = CharField()
+    class Meta:
+        database = db
+
 class Advice(Model):
     added_by_id = CharField()
-    advice = CharField()
+    submission = CharField()
     class Meta:
         database = db
 
 class Trump(Model):
     added_by_id = CharField()
-    quote = CharField()
+    submission = CharField()
     class Meta:
         database = db
 
 class Kek(Model):
     # TODO maybe instead of added_by_id, join with a User object
     added_by_id = CharField()
-    quote = CharField()
+    submission = CharField()
     class Meta:
         database = db

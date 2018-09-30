@@ -31,6 +31,8 @@ async def process_message(msg):
     if not (cmdText in command_names):
         return
 
+    # TODO check somewhere for if the message is a server message or sent by a bot
+
     # Proceed to process command
 
     c = get_command_instance_by_name(cmdText, client)
