@@ -35,6 +35,19 @@ def get_user_model(discord_user):
 def get_server_model(discord_server):
     return Server.get_or_none(Server.server_id == discord_server.id)
 
+def get_or_make_server_model(discord_server):
+    res = Server.get_or_none(Server.server_id == discord_server.id)
+    # print("res")
+    # print(type(res))
+    # print(res)
+    # print(vars(res))
+    if res == None:
+        myVar = add_server(discord_server)
+        print("myVar")
+        print(myVar)
+        return myVar
+    return res
+
 def does_user_exist(discord_user):
     return not User.get_or_none(User.discord_id == discord_user.id) == None
 
@@ -50,10 +63,16 @@ def add_user(discord_user, is_admin=False):
     return False
 
 # Returns created Server model if successful, else false
-def add_server(discord_server, welcome_channel_id=None):
+def add_server(discord_server, welcome_channel_id=None, poll_channel_id=None):
     if not does_server_exist(discord_server):
-        new_server = Server.create(server_id=discord_server.id, welcome_channel_id=welcome_channel_id)
+        new_server = Server.create(
+            server_id=discord_server.id,
+            welcome_channel_id=welcome_channel_id,
+            poll_channel_id=poll_channel_id
+        )
         new_server.save()
+        print("aaaaa")
+        print(new_server)
         return new_server
     return False
 
@@ -65,16 +84,13 @@ def set_welcome_channel(channel):
         q = Server.update({Server.welcome_channel_id: channel.id}).where(Server.server_id == channel.server.id)
         q.execute()
 
-    # if does_server_exist(channel.server):
-    #
-    #
-    #     def make_admin(discord_user):
-    #         new_admin = get_user_model(discord_user)
-    #         if new_admin == None:
-    #             add_user(discord_user, is_admin=True)
-    #         else:
-    #             q = User.update({User.is_admin: True}).where(User.discord_id == discord_user.id)
-    #             q.execute()
+def set_poll_channel(channel):
+    server_model = get_server_model(channel.server)
+    if server_model == None:
+        add_server(channel.server, poll_channel_id = channel.id)
+    else:
+        q = Server.update({Server.poll_channel_id: channel.id}).where(Server.server_id == channel.server.id)
+        q.execute()
 
 def add_meme(discord_user, img_url):
     new_meme = Meme.create(added_by_id=discord_user.id, img_url=img_url)
@@ -145,6 +161,7 @@ class User(Model):
 class Server(Model):
     server_id = CharField()
     welcome_channel_id = CharField(null=True)
+    poll_channel_id = CharField(null=True)
     class Meta:
         database = db
 
@@ -173,7 +190,6 @@ class Trump(Model):
         database = db
 
 class Kek(Model):
-    # TODO maybe instead of added_by_id, join with a User object
     added_by_id = CharField()
     submission = CharField()
     class Meta:

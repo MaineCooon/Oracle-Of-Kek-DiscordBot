@@ -37,7 +37,11 @@ class AddCommand(Command, ABC):
 
         # Wait for next message from user (with a timeout period set in config)
 
-        response = await self.client.wait_for_message(timeout=config.add_row_timeout, author=msg.author)
+        response = await self.client.wait_for_message(
+            timeout = config.add_row_timeout,
+            channel = msg.channel,
+            author = msg.author
+        )
 
         if response == None:
             # If no message was sent before timeout ended, abort
@@ -72,10 +76,17 @@ class AddCommand(Command, ABC):
 
             # Wait for user to select one
             res = await self.client.wait_for_reaction(
+                message = confirmation,
                 emoji = [templates.yes_emoji, templates.no_emoji],
                 user = msg.author,
                 timeout = config.confirm_reaction_timeout
             )
+
+            if res == None:
+                await self.client.delete_message(repost)
+                await self.client.clear_reactions(confirmation)
+                await self.client.edit_message(confirmation, templates.confirm_reaction_timeout_message)
+                return
 
             if res.reaction.emoji == templates.yes_emoji:
                 await self.client.delete_message(repost)

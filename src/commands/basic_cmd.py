@@ -112,3 +112,26 @@ class SetWelcomeChannel(Command):
 
         database.set_welcome_channel(welcome_channel)
         await self.client.send_message(msg.channel, "Welcome channel set!")
+
+@command
+class SetPollChannel(Command):
+    name = "setpollchannel"
+    description = "Set poll channel to this channel."
+
+    def check_privs(self, discord_user):
+        return database.is_admin(discord_user)
+
+    async def execute(self, msg, args):
+        await self.client.send_typing(msg.channel)
+
+        poll_channel = msg.channel
+
+        # If they mentioned a channel, set poll channel to that
+        if len(args) > 0:
+            for c in msg.server.channels:
+                if args[0] == c.mention:
+                    poll_channel = c
+                    break
+
+        database.set_poll_channel(poll_channel)
+        await self.client.send_message(msg.channel, "Poll channel set!")

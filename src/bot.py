@@ -7,6 +7,7 @@ import commands
 import templates
 from core.database import create_db_tables, get_server_model
 from helpers.cmd import *
+from commands.poll_cmd import is_message_active_poll, process_poll_reaction
 
 client = discord.Client()
 prefix = config.prefix
@@ -54,6 +55,11 @@ async def on_message(msg):
     await process_message(msg)
 
 @client.event
+async def on_reaction_add(reaction, user):
+    if is_message_active_poll(reaction.message):
+        await process_poll_reaction(reaction, user, client)
+
+@client.event
 async def on_member_join(member):
     channels = member.server.channels
     server_model = get_server_model(member.server)
@@ -73,9 +79,10 @@ async def on_member_join(member):
     #    channel arbitrarily
     if welcome_channel == None:
         for c in channels:
-            if c.permissions_for(member.server.me).send_messages:
-                welcome_channel = c
-                break
+            if c.type == ChannelType.text:
+                if c.permissions_for(member.server.me).send_messages:
+                    welcome_channel = c
+                    break
 
     if welcome_channel != None:
         await client.send_typing(c)
