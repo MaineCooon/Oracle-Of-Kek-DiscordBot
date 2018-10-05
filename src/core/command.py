@@ -26,6 +26,12 @@ class Command(ABC):
     def check_privs(self, discord_user):
         return True
 
+    # Returns True if command is usable in this channel, False if not
+    # Used mainly for commands only usable in servers or in DMs.  Must be
+    #    specifically implemented for command classes that have channel requirements
+    def check_channel_type(self, channel):
+        return True
+
     @abstractmethod
     async def execute(self, msg, args):
         pass

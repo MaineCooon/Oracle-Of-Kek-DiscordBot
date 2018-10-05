@@ -1,6 +1,5 @@
 import discord
 import asyncio
-import shlex
 
 import config
 import commands
@@ -11,7 +10,6 @@ from commands.poll_cmd import is_message_active_poll, process_poll_reaction
 
 client = discord.Client()
 prefix = config.prefix
-log_channel = config
 create_db_tables() # TODO probably won't stay in this file
 
 async def process_message(msg):
@@ -20,12 +18,7 @@ async def process_message(msg):
         return
 
     # Split message by spaces
-    # TODO CURRENTLY SPLITS ARGS EVEN FOR COMMANDS THAT ONLY TAKE ONE ARG WHICH
-    #      MAY HAVE SPACES (e.g. addkek).  EVEN WHEN REJOINING THE ARGS SHLEX
-    #      REMOVES ANY QUOTATION MARKS.  FIX THIS.  (probably make a more robust
-    #      system that only splits the args in the first place if the command
-    #      takes multiple args?)
-    msgArr = shlex.split(msg.content)
+    msgArr = msg.content.split()
     # Separate command and args
     cmdText = msgArr[0][len(prefix):].lower()
     args = msgArr[1:] if len(msgArr) > 1 else []
@@ -34,6 +27,7 @@ async def process_message(msg):
         return
 
     # TODO check somewhere for if the message is a server message or sent by a bot
+    # TODO check if command was sent in a server or in DM
 
     # Proceed to process command
 

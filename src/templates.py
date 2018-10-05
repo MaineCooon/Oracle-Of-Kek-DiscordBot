@@ -88,7 +88,46 @@ content_not_loaded_message = "Sorry, the content failed to display for some reas
 
 try_again_message = "Sorry!  Something went wrong.  Please try again."
 
+tipping_account_exists_message = "Tipping account already exists for user {username_tag}.  " \
+        "Try {prefix}deposit to check deposit address."
+no_tipping_account_exists_message = "No tipping account registered for {username_tag}.  Please " \
+        "create one using {prefix}register to do this."
+tipping_account_creation_failed_message = "Creation of tipping account failed.  Please try again."
+tipping_account_created_message = "Your tipping account has been generated for {username_tag}."
+balance_unavailable_message = "Unable to retrieve balance for {username_tag}."
+invalid_address_message = "Invalid deposit address."
+cant_withdraw_amount_message = "Unable to withdraw this amount.  You may not have enough in " \
+        "your KekBot account.  Use {prefix}balance to check your current balance." \
+        .format(prefix=config.prefix)
+withdrawal_failed_message = "Withdrawal failed.  Please try again."
+withdrawal_completed_message = "Withdrawal complete!"
+
+tip_failed_message = "Tip failed.  Please try again."
+tip_completed_message = "Tip completed!"
+
+display_balance_message = "{balance} KEK"
+
+withdrawal_history_message = "**Withdrawal History:**\n{withdrawals}"
+deposit_history_message = "**Deposit History:**\n{deposits}"
+
+list_withdrawals_failed_message = "Withdrawal list failed.  Please try again."
+list_deposits_failed_message = "Deposit list failed.  Please try again."
+list_tips_failed_message = "Tip list failed.  Please try again."
+
+list_sent_tips = "Sent to: {username_tag} | Amount: {amount} KEK"
+list_received_tips = "Received from: {username_tag} | Amount: {amount} KEK"
+
 poll_footer_text = "Poll created by {username}"
 poll_closed_description = "Poll has been closed.  No more voting will be counted."
+
+cant_bet_amount_message = "Unable to bet this amount.  You may not have enough in " \
+    "your KekBot account.  Use {prefix}balance to check your current balance." \
+    .format(prefix=config.prefix)
+announce_dubs_message = "{number} DUBS!\nYou have won {payout} KEKs"
+announce_trips_message = "{number} TRIPS!\nYou have won {payout} KEKs"
+announce_quads_message = "{number} QUADS!\nYou have won {payout} KEKs"
+bet_failed_message = "Bet failed.  Please try again."
+
+usage_message = "**Usage:** {usage}"
 
 number_emojis = ['1⃣', '2⃣', '3⃣', '4⃣', '5⃣', '6⃣', '7⃣', '8⃣', '9⃣', '🔟']
