@@ -1,9 +1,9 @@
 > **Language:** Python 3
-
-> **Libraries:** [discord.py](https://github.com/Rapptz/discord.py) \| [peewee](http://docs.peewee-orm.com/en/latest/) \| [ccxt](odajsd) \| [requests](ajsdoi)
-
+>
+> **Libraries:** [discord.py](https://github.com/Rapptz/discord.py) \| [peewee](http://docs.peewee-orm.com/en/latest/) \| [ccxt](https://github.com/ccxt/ccxt) \| [Requests](http://docs.python-requests.org/en/master/)
+>
 > **Database:** MySQL
-
+>
 > **Author:** [Sparrowing on GitHub](https://github.com/sparrowing) \| [sparrowing on Fiverr](https://www.fiverr.com/sparrowing)
 
 # Config
@@ -39,25 +39,49 @@ All configuration settings are read from a file named `config.py`.  File MUST ha
 
 # Commands
 
-**Basic Commands:**
-Command Name | Usage | Requirements | Description
-`commands` | `!commands` | None | joaisd
-`help` | `!help <command_name>` or `!help` | `!help` must have DMs enabled | ajosdijf
-`ping` | `!ping` | None | Ping pong!
-`setwelcomechannel` | `!setwelcomechannel` | Requires admin privileges on bot / must be in a text channel of a server that bot has permissions to speak in | sjdoaisd
-`setpollchannel` | `!setpollchannel` | Requires admin privileges on bot / must be in a text channel of a server that bot has permissions to speak in | asdjofj
+### Basic Commands:
+##### commands
+> **Usage:** `!commands`
+>
+> **Requirements:** None
+>
+> **Description:** list commands
+##### help
+> **Usage:** `!help <command_name>` or `!help`
+>
+> **Requirements:** `!help` must have DMs enabled
+>
+> **Description:** jsdpfiojsad
+##### ping
+> **Usage:** `!ping`
+>
+> **Requirements:** None
+>
+> **Description:** Ping pong!
+##### setwelcomechannel
+> **Usage:** `!setwelcomechannel`
+>
+> **Requirements:** Requires admin privileges on bot / must be in a text channel of a server that bot has permissions in
+>
+> **Description:** asjdofd
+##### setpollchannel
+> **Usage:** `!setpollchannel`
+>
+> **Requirements:** Requires admin privileges on bot / must be in a text channel of a server that bot has permissions in
+>
+> **Description:** asdojfd
 
-**Persistence Commands:**
+### Persistence Commands:
 
-**Meme Commands:**
+### Meme Commands:
 
-**Poll Commands:**
+### Poll Commands:
 
-**Ticker Commands:**
+### Ticker Commands:
 
-**Transaction Commands:**
+### Transaction Commands:
 
-**Other Commands:**
+### Other Commands:
 
 # Installation
 
