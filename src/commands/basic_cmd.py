@@ -1,7 +1,7 @@
 from discord import Embed
 
-import core.database as db
 import templates as t
+import core.database as db
 from config import prefix
 from core.command import *
 

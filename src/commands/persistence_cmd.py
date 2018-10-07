@@ -4,8 +4,8 @@ from discord import MessageType
 from io import BytesIO
 
 import config
-import core.database as database
 import templates as t
+import core.database as database
 from core.command import *
 
 # Parent class for all !add commands

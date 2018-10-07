@@ -2,33 +2,10 @@ import random
 from discord import ChannelType, Embed
 
 import config
-import core.database as database
 import templates as t
+import core.database as database
 import core.wallet as wallet
 from core.command import *
-
-# TODO DEBUG COMMAND FOR TESTING.  REMOVE LATER.
-@command
-class AddBalanceCommand(Command):
-    name = "addbalance"
-    description = "aisjdf"
-    usage = f"`{config.prefix}addbalance`"
-
-    def check_privs(self, discord_user):
-        return database.is_admin(discord_user)
-
-    async def execute(self, msg, args):
-        await self.client.send_typing(msg.channel)
-        user = msg.mentions[0]
-        amount = float(args[1])
-        address = database.get_deposit_address(user)
-        try:
-            wallet.debug.add_balance(address, amount)
-        except:
-            await self.client.send_message(msg.channel, "WRITE BETTER COMMANDS")
-            return
-        await self.client.send_typing(msg.channel)
-        await self.client.send_message(msg.channel, "Balance added!")
 
 @command
 class RegisterCommand(Command):
@@ -202,9 +179,6 @@ class TipCommand(Command):
         if msg.mentions[0].mention.replace('!', '') != user_tag.replace('!', ''): # Tags sometimes have ! in them
             await self.client.send_message(msg.channel, t.usage_message.format(usage=self.usage))
             return
-
-        # print(msg.mentions[0].mention)
-        # print(user_tag)
 
         # Set receiving user
         receiver = msg.mentions[0]

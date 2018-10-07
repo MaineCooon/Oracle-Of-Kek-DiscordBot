@@ -26,7 +26,7 @@ create_question_timeout = 60
 submit_selection_timeout = 60
 
 # Note, making these values too large may risk the bot's message hitting Discord's
-#    character limit (2000)
+#    character limit
 withdrawals_list_limit = 10
 deposits_list_limit = 10
 tip_list_limit = 5

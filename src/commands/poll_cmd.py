@@ -116,8 +116,8 @@ class PollCommand(Command):
                 await self.client.delete_message(repost)
                 try:
                     await self.client.clear_reactions(confirmation)
-                except Exception:
-                    traceback.print_exc()
+                except:
+                    pass
             elif res.reaction.emoji == t.no_emoji:
                 await self.client.delete_message(repost)
                 await self.client.clear_reactions(confirmation)
@@ -263,9 +263,8 @@ class PollCommand(Command):
         # Create the actual poll post
         try:
             poll_message = await self.client.send_message(poll_channel, embed=poll.get_embed())
-        except Exception:
+        except:
             # Request failed, probably due to embed content being too long
-            traceback.print_exc()
             await self.client.send_message(msg.channel, t.poll_too_long_message)
             return False
 
