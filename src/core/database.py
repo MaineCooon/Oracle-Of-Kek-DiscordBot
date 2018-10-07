@@ -26,7 +26,8 @@ def close_db():
 def create_db_tables():
     # create_tables() does safe creation by default, and will simply not create
     # table if it already exists
-    db.create_tables([User, Server, Tip, Meme, Gif, Advice, Trump, Kek])
+    db.create_tables([User, Server, Tip, Advice, Gif, Kek, Meme, Trump])
+    print("Database tables prepared")
 
 
 ################################################################################
@@ -55,6 +56,13 @@ def add_user(discord_user, is_admin=False, deposit_address=None):
 def does_user_exist(discord_user):
     return not User.get_or_none(User.discord_id == discord_user.id) == None
 
+def bot_has_admin():
+    users = get_users()
+    for u in users:
+        if u.is_admin == True:
+            return True
+    return False
+
 def add_admin(user):
     if Admin.get_or_none(Admin.discord_id == user.id) == None:
         new_admin = Admin.create(discord_id=user.id)
@@ -66,13 +74,6 @@ def make_admin(discord_user):
         add_user(discord_user, is_admin=True)
     else:
         q = User.update({User.is_admin: True}).where(User.discord_id == discord_user.id)
-        q.execute()
-
-# TODO temporary function for debug, delete later
-def remove_admin(discord_user):
-    demoted_user = get_user_model(discord_user)
-    if not demoted_user == None:
-        q = User.update({User.is_admin: False}).where(User.discord_id == discord_user.id)
         q.execute()
 
 def is_admin(discord_user):
@@ -170,15 +171,15 @@ def get_tips_by_user(user):
 
 
 ################################################################################
-##### Meme model related functions #############################################
+##### Advice model related functions ###########################################
 
-def get_memes():
-    return Meme.select()
+def get_advices():
+    return Advice.select()
 
-def add_meme(discord_user, img_url):
-    new_meme = Meme.create(added_by_id=discord_user.id, img_url=img_url)
-    new_meme.save()
-    return new_meme
+def add_advice(discord_user, submission):
+    new_advice = Advice.create(added_by_id=discord_user.id, submission=submission)
+    new_advice.save()
+    return new_advice
 
 
 ################################################################################
@@ -194,15 +195,27 @@ def add_gif(discord_user, img_url):
 
 
 ################################################################################
-##### Advice model related functions ###########################################
+##### Kek model related functions ##############################################
 
-def get_advices():
-    return Advice.select()
+def get_keks():
+    return Kek.select()
 
-def add_advice(discord_user, submission):
-    new_advice = Advice.create(added_by_id=discord_user.id, submission=submission)
-    new_advice.save()
-    return new_advice
+def add_kek(discord_user, submission):
+    new_kek = Kek.create(added_by_id=discord_user.id, submission=submission)
+    new_kek.save()
+    return new_kek
+
+
+################################################################################
+##### Meme model related functions #############################################
+
+def get_memes():
+    return Meme.select()
+
+def add_meme(discord_user, img_url):
+    new_meme = Meme.create(added_by_id=discord_user.id, img_url=img_url)
+    new_meme.save()
+    return new_meme
 
 
 ################################################################################
@@ -216,17 +229,6 @@ def add_trump(discord_user, submission):
     new_trump.save()
     return new_trump
 
-
-################################################################################
-##### Kek model related functions ##############################################
-
-def get_keks():
-    return Kek.select()
-
-def add_kek(discord_user, submission):
-    new_kek = Kek.create(added_by_id=discord_user.id, submission=submission)
-    new_kek.save()
-    return new_kek
 
 ################################################################################
 ##### Model classes ############################################################
@@ -253,9 +255,9 @@ class Tip(Model):
     class Meta:
         database = db
 
-class Meme(Model):
+class Advice(Model):
     added_by_id = CharField()
-    img_url = CharField()
+    submission = CharField()
     class Meta:
         database = db
 
@@ -265,19 +267,19 @@ class Gif(Model):
     class Meta:
         database = db
 
-class Advice(Model):
+class Kek(Model):
     added_by_id = CharField()
     submission = CharField()
+    class Meta:
+        database = db
+
+class Meme(Model):
+    added_by_id = CharField()
+    img_url = CharField()
     class Meta:
         database = db
 
 class Trump(Model):
-    added_by_id = CharField()
-    submission = CharField()
-    class Meta:
-        database = db
-
-class Kek(Model):
     added_by_id = CharField()
     submission = CharField()
     class Meta:

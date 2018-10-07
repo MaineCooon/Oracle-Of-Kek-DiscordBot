@@ -1,12 +1,8 @@
 from asyncio import sleep
 from discord import Embed, MessageType, ChannelType
 
-from pprint import pprint
-import traceback
-import inspect
-
 import config
-import templates
+import templates as t
 import core.database as database
 from core.command import *
 from core.poll import *
@@ -38,17 +34,21 @@ async def process_poll_reaction(reaction, user, client):
         return
 
     # Add vote to poll object and remove reaction from the post
-    poll.add_vote(user, templates.number_emojis.index(reaction.emoji))
+    poll.add_vote(user, t.number_emojis.index(reaction.emoji))
     await client.remove_reaction(poll_message, reaction.emoji, user)
 
 @command
 class PollCommand(Command):
     name = "poll"
-    description = "poll command"
+    description = "Create a poll for users to vote on."
+    usage = f"`{config.prefix}poll`"
     selection_limit = 10
 
     def check_privs(self, discord_user):
         return database.is_admin(discord_user)
+
+    def check_channel_type(self, channel):
+        return not channel.is_private
 
     async def _prompt_question(self, msg):
         channel = msg.channel
@@ -56,7 +56,7 @@ class PollCommand(Command):
         # Ask user to send new submission
 
         await self.client.send_typing(channel)
-        await self.client.send_message(channel, templates.await_question_message)
+        await self.client.send_message(channel, t.await_question_message)
 
         # Wait for next message from user (with a timeout period set in config)
 
@@ -69,12 +69,12 @@ class PollCommand(Command):
         if response == None:
             # If no message was sent before timeout ended, abort
             await self.client.send_typing(channel)
-            await self.client.send_message(channel, templates.create_question_cancelled_message)
+            await self.client.send_message(channel, t.create_question_cancelled_message)
             return False
         elif response.content.lower() == "stop":
             # If user sent 'stop', exit
             await self.client.send_typing(channel)
-            await self.client.send_message(channel, templates.create_question_stopped_message)
+            await self.client.send_message(channel, t.create_question_stopped_message)
             return False
 
         # Verify response message is valid
@@ -82,7 +82,7 @@ class PollCommand(Command):
         if not msg.type == MessageType.default and len(msg.content) > 0:
             # If not, exit
             await self.client.send_typing(channel)
-            await self.client.send_message(channel, templates.invalid_question_message)
+            await self.client.send_message(channel, t.invalid_question_message)
             return False
 
         new_question = response.content
@@ -92,16 +92,16 @@ class PollCommand(Command):
             # Verify with user this is what they want to submit
             repost = await self.client.send_message(channel, new_question)
             await self.client.send_typing(channel)
-            confirmation = await self.client.send_message(channel, templates.confirm_question_message)
+            confirmation = await self.client.send_message(channel, t.confirm_question_message)
 
             # Create reaction options
-            await self.client.add_reaction(confirmation, templates.yes_emoji)
-            await self.client.add_reaction(confirmation, templates.no_emoji)
+            await self.client.add_reaction(confirmation, t.yes_emoji)
+            await self.client.add_reaction(confirmation, t.no_emoji)
 
             # Wait for user to select one
             res = await self.client.wait_for_reaction(
                 message = confirmation,
-                emoji = [templates.yes_emoji, templates.no_emoji],
+                emoji = [t.yes_emoji, t.no_emoji],
                 user = msg.author,
                 timeout = config.confirm_reaction_timeout
             )
@@ -109,26 +109,26 @@ class PollCommand(Command):
             if res == None:
                 await self.client.delete_message(repost)
                 await self.client.clear_reactions(confirmation)
-                await self.client.edit_message(confirmation, templates.confirm_reaction_timeout_message)
+                await self.client.edit_message(confirmation, t.confirm_reaction_timeout_message)
                 return False
 
-            if res.reaction.emoji == templates.yes_emoji:
+            if res.reaction.emoji == t.yes_emoji:
                 await self.client.delete_message(repost)
                 try:
                     await self.client.clear_reactions(confirmation)
                 except Exception:
                     traceback.print_exc()
-            elif res.reaction.emoji == templates.no_emoji:
+            elif res.reaction.emoji == t.no_emoji:
                 await self.client.delete_message(repost)
                 await self.client.clear_reactions(confirmation)
-                await self.client.edit_message(confirmation, templates.create_poll_cancelled_message)
+                await self.client.edit_message(confirmation, t.create_poll_cancelled_message)
                 return False
             else:
                 await self.client.send_typing(channel)
-                await self.client.send_message(channel, templates.try_again_message)
+                await self.client.send_message(channel, t.try_again_message)
                 return False
 
-        send = templates.await_selections_message
+        send = t.await_selections_message
 
         try:
             await self.client.edit_message(confirmation, send)
@@ -163,18 +163,18 @@ class PollCommand(Command):
             if response == None:
                 # If no message was sent before timeout ended, abort
                 await self.client.send_typing(channel)
-                await self.client.send_message(channel, templates.add_selection_cancelled_message)
+                await self.client.send_message(channel, t.add_selection_cancelled_message)
                 return False
             elif response.content.lower() == "stop":
                 # If user sent 'stop', exit
                 await self.client.send_typing(channel)
-                await self.client.send_message(channel, templates.create_poll_cancelled_message)
+                await self.client.send_message(channel, t.create_poll_cancelled_message)
                 return False
             elif response.content.lower() == "done":
                 if i == 0:
                     # If they said 'done' without entering any options, exit
                     await self.client.send_typing(channel)
-                    await self.client.send_message(channel, templates.create_poll_cancelled_message)
+                    await self.client.send_message(channel, t.create_poll_cancelled_message)
                     return False
                 else:
                     break
@@ -191,22 +191,22 @@ class PollCommand(Command):
 
         if preview_embed == False:
             await self.client.send_typing(channel)
-            await self.client.send_message(channel, templates.try_again_message)
+            await self.client.send_message(channel, t.try_again_message)
             return False
 
         # Verify with user this poll is all correct
         repost = await self.client.send_message(channel, embed=preview_embed)
         await self.client.send_typing(channel)
-        confirmation = await self.client.send_message(channel, templates.confirm_poll_preview_message)
+        confirmation = await self.client.send_message(channel, t.confirm_poll_preview_message)
 
         # Create confirm reactions
-        await self.client.add_reaction(confirmation, templates.yes_emoji)
-        await self.client.add_reaction(confirmation, templates.no_emoji)
+        await self.client.add_reaction(confirmation, t.yes_emoji)
+        await self.client.add_reaction(confirmation, t.no_emoji)
 
         # Wait for user to select one
         res = await self.client.wait_for_reaction(
             message = confirmation,
-            emoji = [templates.yes_emoji, templates.no_emoji],
+            emoji = [t.yes_emoji, t.no_emoji],
             user = msg.author,
             timeout = config.confirm_reaction_timeout
         )
@@ -214,65 +214,47 @@ class PollCommand(Command):
         if res == None:
             await self.client.delete_message(repost)
             await self.client.clear_reactions(confirmation)
-            await self.client.edit_message(confirmation, templates.confirm_reaction_timeout_message)
+            await self.client.edit_message(confirmation, t.confirm_reaction_timeout_message)
             return False
 
-        if res.reaction.emoji == templates.yes_emoji:
+        if res.reaction.emoji == t.yes_emoji:
             await self.client.delete_message(repost)
             await self.client.clear_reactions(confirmation)
-        elif res.reaction.emoji == templates.no_emoji:
+        elif res.reaction.emoji == t.no_emoji:
             await self.client.delete_message(repost)
             await self.client.clear_reactions(confirmation)
-            await self.client.edit_message(confirmation, templates.create_poll_cancelled_message)
+            await self.client.edit_message(confirmation, t.create_poll_cancelled_message)
             return False
         else:
             await self.client.send_typing(channel)
-            await self.client.send_message(channel, templates.try_again_message)
+            await self.client.send_message(channel, t.try_again_message)
             return False
 
-        await self.client.edit_message(confirmation, templates.poll_created_message)
+        await self.client.edit_message(confirmation, t.poll_created_message)
         return True
 
     async def _create_poll_message(self, msg, poll):
-        # TODO clean all the printing junk out of this function
         channels = msg.server.channels
         server_model = database.get_or_make_server_model(msg.server)
 
         poll_channel = None
 
-        # print("1")
-        # print(server_model)
-
         # If the server has a poll channel saved, retrieve it, and make sure
         #    it is both valid, and we have permission to send messages in it
-        # if server_model != None:
         if server_model.poll_channel_id != None:
-            # print("2")
             c = msg.server.get_channel(server_model.poll_channel_id)
             if c != None:
-                # print("3")
                 if c.permissions_for(msg.server.me).send_messages:
-                    # print("4")
                     poll_channel = c
-
-        # print("5")
-        # pprint(poll_channel)
 
         # If there wasn't a saved poll channel that could be used, select a
         #    channel arbitrarily
         if poll_channel == None:
-            # print("6")
             for c in channels:
                 if c.type == ChannelType.text:
-                    # print("7")
                     if c.permissions_for(msg.server.me).send_messages:
-                        # print("8")
-                        # pprint(inspect.getmembers(c))
                         poll_channel = c
                         break
-
-        # print("9")
-        # pprint(inspect.getmembers(poll_channel))
 
         if poll_channel == None:
             # Break if the poll channel somehow couldn't be resolved
@@ -284,7 +266,7 @@ class PollCommand(Command):
         except Exception:
             # Request failed, probably due to embed content being too long
             traceback.print_exc()
-            await self.client.send_message(msg.channel, templates.poll_too_long_message)
+            await self.client.send_message(msg.channel, t.poll_too_long_message)
             return False
 
         # Add the reactions (poll options) to the post
@@ -324,8 +306,7 @@ class PollCommand(Command):
 
         try:
             await self.client.send_message(poll_channel, embed=poll.get_results_embed())
-        except Exception as e:
-            traceback.print_exc() # TODO REMOVE
+        except:
             # Embed content may have been too long - try sending shortened version
             try:
                 await self.client.send_message(poll_channel, embed=poll.get_embed(short_embed=True))
@@ -352,7 +333,7 @@ class PollCommand(Command):
                 return
         # Otherwise, just announce poll creation
         else:
-            await self.client.send_message(msg.channel, templates.poll_created_message)
+            await self.client.send_message(msg.channel, t.poll_created_message)
 
         poll_message = await self._create_poll_message(msg, poll)
         if poll_message == False:
@@ -364,12 +345,6 @@ class PollCommand(Command):
         })
 
         await sleep(config.poll_duration*60)
-
-
-        # await self.client.send_message(msg.channel, "poll ended.")
-        # # pprint(vars(poll)) # TODO remove
-        # for sel in poll.selections:
-        #     pprint(vars(sel))
 
         w = poll.make_winners()
 

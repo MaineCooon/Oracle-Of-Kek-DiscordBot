@@ -34,6 +34,12 @@ class WalletDebug():
             return self.balances[user_model.deposit_address]
         return 0.0
 
+    def create_deposit_address(self, user):
+        address = str(user.id) + "deposit"
+        self.balances[address] = 100.0
+        database.set_deposit_address(user, address)
+        return address
+
     def make_transaction(self, sender_address, receiver_address, amount):
         self.subtract_balance(sender_address, amount)
         self.add_balance(receiver_address, amount)
@@ -82,19 +88,25 @@ debug = WalletDebug()
 
 ### END
 
+def get_staking_weight():
+    return "TBA"
+
+def get_staking_reward():
+    return "TBA"
+
+def get_blockchain_size():
+    return "TBA"
+
 # Returns given user's current KekBot balance as a float
 def get_balance(user):
+    # address = database.get_deposit_address(user)
     return debug.get_balance(user)
 
 # Generates a KekBot deposit address
 # Returns deposit address string for use
 def create_deposit_address(user):
-    ### TEMPORARY CODE ###
-    address = str(user.id) + "deposit"
-    debug.balances[address] = 100.0
-    ### TEMPORARY CODE ###
-    database.set_deposit_address(user, address)
-    return address
+    # database.set_deposit_address(user, address)
+    return debug.create_deposit_address(user)
 
 # Returns a LIST of transaction ids as strings
 def get_withdrawals(address):

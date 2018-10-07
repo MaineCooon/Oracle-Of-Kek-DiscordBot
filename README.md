@@ -45,43 +45,253 @@ All configuration settings are read from a file named `config.py`.  File MUST ha
 >
 > **Requirements:** None
 >
-> **Description:** list commands
+> **Description:** Lists all commands available in the current context, meaning usable by this user in this channel.  If using in a server, DM-exclusive commands will be excluded, etc.
 ##### help
 > **Usage:** `!help <command_name>` or `!help`
 >
 > **Requirements:** `!help` must have DMs enabled
 >
-> **Description:** jsdpfiojsad
+> **Description:** Provides descriptions of and usage information for commands.  Using the command_name argument will show details about the command of that name, such as command description and proper usage.  Just using the `!help` command without the command_name argument (or if the argument is not actually a valid command) will send a DM to the command user listing out short descriptions of all commands.
 ##### ping
 > **Usage:** `!ping`
 >
 > **Requirements:** None
 >
 > **Description:** Ping pong!
+##### addadmin
+> **Usage:** `!addadmin @<user>`
+>
+> **Requirements:** Requires admin privileges on bot
+>
+> **Description:** Add user as an admin on the bot.  May need to be done inside a server for @ to work right.
 ##### setwelcomechannel
 > **Usage:** `!setwelcomechannel`
 >
 > **Requirements:** Requires admin privileges on bot / must be in a text channel of a server that bot has permissions in
 >
-> **Description:** asjdofd
+> **Description:** Sets the channel the command was sent in to being the dedicated 'welcome channel' for this server.  All messages welcoming new users will be sent to this channel.
 ##### setpollchannel
 > **Usage:** `!setpollchannel`
 >
 > **Requirements:** Requires admin privileges on bot / must be in a text channel of a server that bot has permissions in
 >
-> **Description:** asdojfd
+> **Description:** Sets the channel the command was sent in to being the dedicated 'poll channel' for this server.  All generated polls will be posted in this channel.  CREATING polls can still be done in any channel, this is simply where the actual poll post will be sent once it's created.
 
 ### Persistence Commands:
+##### addadvice
+> **Usage:** `!addadvice`
+>
+> **Requirements:** Requires admin privileges on bot
+>
+> **Description:** Add a piece of advice to the database.  User will be prompted to give their submission after activating the command.  Text only.
+
+##### addgif
+> **Usage:** `!addgif`
+>
+> **Requirements:** Requires admin privileges on bot
+>
+> **Description:** Add a gif to the database.  User will be prompted to give their submission after activating the command.  Images only.
+
+##### addkek
+> **Usage:** `!addkek`
+>
+> **Requirements:** Requires admin privileges on bot
+>
+> **Description:** Add a kek quote to the database.  User will be prompted to give their submission after activating the command.  Text only.
+
+##### addmeme
+> **Usage:** `!addmeme`
+>
+> **Requirements:** Requires admin privileges on bot
+>
+> **Description:** Add a meme image to the database.  User will be prompted to give their submission after activating the command.  Images only.  All submissions will be posted as a .png when sent in the chat, so animated gifs may not display as desired.  Use `!addgif` instead.
+
+##### addtrump
+> **Usage:** `!addtrump`
+>
+> **Requirements:** Requires admin privileges on bot
+>
+> **Description:** Add a Trump quote to the database.  User will be prompted to give their submission after activating the command.  Text only.
 
 ### Meme Commands:
+##### advice
+> **Usage:** `!advice`
+>
+> **Requirements:** None
+>
+> **Description:** Sends a random piece of advice from the bot's database.
 
-### Poll Commands:
+##### gif
+> **Usage:** `!gif`
+>
+> **Requirements:** None
+>
+> **Description:** Sends a random gif from the bot's database.
+
+##### kek
+> **Usage:** `!kek`
+>
+> **Requirements:** None
+>
+> **Description:** Sends a random kek quote from the bot's database.
+
+##### meme
+> **Usage:** `!meme`
+>
+> **Requirements:** None
+>
+> **Description:** Sends a random meme image from the bot's database.
+
+##### trump
+> **Usage:** `!trump`
+>
+> **Requirements:** None
+>
+> **Description:** Sends a random Trump quote from the bot's database.
+
+### Poll Command:
+
+##### poll
+> **Usage:** `!poll`
+>
+> **Requirements:** Requires admin privileges on bot / servers only (no DMs)
+>
+> **Description:** Allows an admin to create a poll for users to vote on.  After activating the command, user will be prompted to enter their question to be asked, followed by the poll options.  Limit 10 options.  Created poll will be sent to the server's poll channel (see `!setpollchannel`) or otherwise sent to an arbitrarily selected text channel.  Poll will run for the amount of time set by the `poll_duration` config value before closing and announcing the results.  Note: Creating very large polls, i.e. polls with several very long options, may extend past Discord's character limits and cause your poll to be rejected, or if it gets through poll creation, may have its result announcement partially cut off.
 
 ### Ticker Commands:
+##### blockchain
+> **Usage:** `!blockchain`
+>
+> **Requirements:** None
+>
+> **Description:** Displays blockchain data.
+
+##### mcap
+> **Usage:** `!mcap`
+>
+> **Requirements:** None
+>
+> **Description:** Displays mcap data.
+
+##### price
+> **Usage:** `!price`
+>
+> **Requirements:** None
+>
+> **Description:** Displays price data.
+
+##### supply
+> **Usage:** `!supply`
+>
+> **Requirements:** None
+>
+> **Description:** Displays current supply.
 
 ### Transaction Commands:
+##### register
+> **Usage:** `!register`
+>
+> **Requirements:** DM only
+>
+> **Description:** Registers user a tipping account with the bot.
+
+##### balance
+> **Usage:** `!balance`
+>
+> **Requirements:** DM only | Must have a registered tipping account
+>
+> **Description:** Tells user their current KekBot tipping account balance.
+
+##### deposit
+> **Usage:** `!deposit`
+>
+> **Requirements:** DM only | Must have a registered tipping account
+>
+> **Description:** Provides user with their KekBot tipping account deposit address.
+
+##### withdraw
+> **Usage:** `!withdraw <address> <amount>`
+>
+> **Requirements:** DM only | Must have a registered tipping account
+>
+> **Description:** Withdraws from tipping account to provided address.  Must have at least `<amount>` in tipping account.  Use `!withdrawals` to view withdrawal history.
+
+##### tip
+> **Usage:** `!tip @<user> <amount>`
+>
+> **Requirements:** Both user and receiver must have a registered tipping account
+>
+> **Description:** Tips `<amount>` to user.  Must have at least `<amount>` in tipping account.
+
+##### deposits
+> **Usage:** `!deposits`
+>
+> **Requirements:** DM only | Must have a registered tipping account
+>
+> **Description:** Displays deposit history of tipping account.  Will only display, at maximum, `deposits_list_limit` value from config.
+
+##### withdrawals
+> **Usage:** `!withdrawals`
+>
+> **Requirements:** DM only | Must have a registered tipping account
+>
+> **Description:** Displays withdrawal history of tipping account.  Will only display, at maximum, `withdrawals_list_limit` value from config.
+
+##### tips
+> **Usage:** `!tips`
+>
+> **Requirements:** DM only | Must have a registered tipping account
+>
+> **Description:** Displays tipping history of tipping account, both sent and received.  Will only display, at maximum, `tip_list_limit` value from config for both sent and received separately.
+
+##### bet
+> **Usage:** `!bet <amount>`
+>
+> **Requirements:** Must have a registered tipping account
+>
+> **Description:** Bet `<amount>` of coins.  A seven-digit number is generated, determining whether you win or not.  Will only work if you actually have the stated amount in your tipping account.
 
 ### Other Commands:
+##### donate
+> **Usage:** `!donate`
+>
+> **Requirements:** None
+>
+> **Description:** Displays donation information.
+
+##### legal
+> **Usage:** `!legal`
+>
+> **Requirements:** None
+>
+> **Description:** Displays legal information.
+
+# Other Details
+
+##### Welcomes
+> KekBot is automatically configured to welcome new members joining a server.  By default, it will arbitrarily select a channel it has speaking privileges in to send welcome messages in.  You can set the welcome channel using the `!setwelcomechannel` command in the desired channel.
+##### Polls
+> Polls are created using the `!poll` command (admin only).  Users vote on polls by selecting reactions corresponding to the option numbers listed on the poll.  The vote is registered and the reaction is immediately wiped by the bot, leaving everyone's votes a mystery until the poll has completed, when the bot will announce the results and which option(s) received the top votes.
+##### 'First Run Mode'
+> This 'mode' is used if the bot has NO registered admin users in its database.  The author of the first message the bot receives, DM or server, will be set as an admin.  First run mode will then immediately be disabled.
+
+# Adding To Servers
+
+**Required Privileges:**
+Bot must have at minimum the following privileges in a server to be able to perform all functions:
+* Change Nickname
+* View Channels
+* Send Messages
+* Manage Messages
+* Embed Links
+* Attach Files
+* Read Message History
+* Add Reactions
+**Join Link:**
+Minimum Permissions: `https://discordapp.com/api/oauth2/authorize?client_id=<your_client_id>&permissions=67238976&scope=bot`
+Full Permissions: `https://discordapp.com/api/oauth2/authorize?client_id=<your_client_id>&permissions=8&scope=bot`
+**Other:**
+* Server must have at least one text channel.
 
 # Installation
 
@@ -107,7 +317,7 @@ These installation instructions are by no means complete.  Parts of installation
 
 4. **Insert bot token**
 
-    Go to 'token' value at the top of this file.  Inside of the quotes, replace `your_token` with the token you added from the developer portal.
+    Go to '`token`' value at the top of this file.  Inside of the quotes, replace `your_token` with the token you added from the developer portal.
 
 5. **Prepare MySQL**
 

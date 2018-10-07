@@ -1,18 +1,44 @@
 import discord
-import asyncio
 
 import config
 import commands
-import templates
-from core.database import create_db_tables, get_server_model
-from helpers.cmd import *
+import templates as t
+import core.database as db
+from core.command import *
 from commands.poll_cmd import is_message_active_poll, process_poll_reaction
 
 client = discord.Client()
 prefix = config.prefix
-create_db_tables() # TODO probably won't stay in this file
+first_run_mode = False
+
+async def bot_startup():
+    global first_run_mode
+    # Check for config changes
+    if client.user.name != config.bot_username:
+        print("Username Updated To: {}".format(config.bot_username))
+        await client.edit_profile(username=config.bot_username)
+
+    # Start 'playing' message
+    await client.change_presence(
+        game=discord.Game( name=config.playing_message )
+    )
+
+    # Prepare database
+    db.create_db_tables()
+
+    # Ensure bot has an admin
+    has_admin = db.bot_has_admin()
+    if not has_admin:
+        print("No admins found, initializing in first run mode")
+        first_run_mode = True
+
+    print("Connected Successfully")
 
 async def process_message(msg):
+    # If message is a server message or sent by a bot, stop here
+    if not msg.type == discord.MessageType.default or msg.author.bot:
+        return
+
     # If message doesn't start with bot prefix, stop here
     if not (msg.content).startswith(prefix):
         return
@@ -26,26 +52,30 @@ async def process_message(msg):
     if not (cmdText in command_names):
         return
 
-    # TODO check somewhere for if the message is a server message or sent by a bot
-    # TODO check if command was sent in a server or in DM
-
     # Proceed to process command
 
     c = get_command_instance_by_name(cmdText, client)
     if bool(c):         # Ensures c actually exists
         if not c.check_privs(msg.author):
             await client.send_typing(msg.channel)
-            await client.send_message(msg.channel, "Insufficient privileges for this command.")
+            await client.send_message(msg.channel, t.insufficient_privileges_message)
+        elif not c.check_channel_type(msg.channel):
+            await client.send_typing(msg.channel)
+            await client.send_message(msg.channel, t.bad_channel_message)
         else:
             await c.execute(msg, args)
 
 @client.event
 async def on_ready():
-    await client.change_presence(game=discord.Game(name="Online"))
-    print("Connected Successfully")
+    await bot_startup()
 
 @client.event
 async def on_message(msg):
+    global first_run_mode
+    if first_run_mode:
+        db.make_admin(msg.author)
+        print("First run mode complete")
+        first_run_mode = False
     await process_message(msg)
 
 @client.event
@@ -56,7 +86,7 @@ async def on_reaction_add(reaction, user):
 @client.event
 async def on_member_join(member):
     channels = member.server.channels
-    server_model = get_server_model(member.server)
+    server_model = db.get_server_model(member.server)
 
     welcome_channel = None
 
@@ -80,6 +110,6 @@ async def on_member_join(member):
 
     if welcome_channel != None:
         await client.send_typing(c)
-        await client.send_message(c, templates.welcome_message.format(username_tag=member.mention))
+        await client.send_message(c, t.welcome_message.format(username_tag=member.mention))
 
 client.run(config.token)

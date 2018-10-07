@@ -1,8 +1,6 @@
 import random
 from discord import ChannelType, Embed
 
-import traceback
-
 import config
 import core.database as database
 import templates as t
@@ -14,6 +12,7 @@ from core.command import *
 class AddBalanceCommand(Command):
     name = "addbalance"
     description = "aisjdf"
+    usage = f"`{config.prefix}addbalance`"
 
     def check_privs(self, discord_user):
         return database.is_admin(discord_user)
@@ -25,8 +24,7 @@ class AddBalanceCommand(Command):
         address = database.get_deposit_address(user)
         try:
             wallet.debug.add_balance(address, amount)
-        except Exception:
-            traceback.print_exc()
+        except:
             await self.client.send_message(msg.channel, "WRITE BETTER COMMANDS")
             return
         await self.client.send_typing(msg.channel)
@@ -35,7 +33,8 @@ class AddBalanceCommand(Command):
 @command
 class RegisterCommand(Command):
     name = "register"
-    description = "jasoidfjsodi"
+    description = "Registers user a tipping account with the bot."
+    usage = f"`{config.prefix}register`"
 
     def check_channel_type(self, channel):
         # Only work in DMs
@@ -67,7 +66,8 @@ class RegisterCommand(Command):
 @command
 class BalanceCommand(Command):
     name = "balance"
-    description = "asjdfo"
+    description = "Displays current KekBot tipping account balance."
+    usage = f"`{config.prefix}balance`"
 
     def check_channel_type(self, channel):
         # Only work in DMs
@@ -101,7 +101,8 @@ class BalanceCommand(Command):
 @command
 class DepositCommand(Command):
     name = "deposit"
-    description = "ajsdfisi"
+    description = "Shows tipping account deposit address."
+    usage = f"`{config.prefix}deposit`"
 
     def check_channel_type(self, channel):
         # Only work in DMs
@@ -123,80 +124,10 @@ class DepositCommand(Command):
         await self.client.send_message(msg.channel, deposit_address)
 
 @command
-class TipCommand(Command):
-    name = "tip"
-    description = "ajsdio"
-    usage = "{}tip @<user> <amount>".format(config.prefix)
-
-    async def execute(self, msg, args):
-        await self.client.send_typing(msg.channel)
-
-        # Ensure proper argument amount
-        if len(args) != 2:
-            await self.client.send_message(msg.channel, t.usage_message.format(usage=self.usage))
-            return
-        user_tag = args[0]
-        amount = args[1]
-
-        # Ensure valid user tag
-        if len(msg.mentions) != 1:
-            await self.client.send_message(msg.channel, t.usage_message.format(usage=self.usage))
-            return
-        if msg.mentions[0].mention != user_tag:
-            await self.client.send_message(msg.channel, t.usage_message.format(usage=self.usage))
-            return
-
-        # Set receiving user
-        receiver = msg.mentions[0]
-
-        # Ensure provided amount is a valid float number
-        try:
-            amount = float(amount)
-        except:
-            await self.client.send_message(msg.channel, t.usage_message.format(usage=self.usage))
-            return
-
-        # Ensure the user of the command has a registered tipping account
-        sender_address = database.get_deposit_address(msg.author)
-        if sender_address == False:
-            await self.client.send_message(msg.channel,
-                t.no_tipping_account_exists_message.format(username_tag=msg.author.mention, prefix=config.prefix)
-            )
-            return
-
-        # Ensure user has enough funds to withdraw specified amount
-        if not wallet.can_withdraw_amount(amount, sender_address):
-            await self.client.send_message(msg.channel, t.cant_withdraw_amount_message)
-            return
-
-        # Ensure the receiver has a registered tipping account
-        receiver_address = database.get_deposit_address(receiver)
-        if receiver_address == False:
-            await self.client.send_message(msg.channel,
-                t.no_tipping_account_exists_message.format(username_tag=msg.author.mention, prefix=config.prefix)
-            )
-            return
-
-        # Finally, perform withdrawal
-        try:
-            wallet.make_transaction(sender_address, receiver_address, amount)
-        except Exception:
-            traceback.print_exc()
-            # If it failed, say so
-            await self.client.send_message(msg.channel, t.tip_failed_message)
-            return
-
-        # Add tip to database
-        database.add_tip(msg.author, receiver, amount)
-
-        # Announce completed tip
-        await self.client.send_message(msg.channel, t.tip_completed_message)
-
-@command
 class WithdrawCommand(Command):
     name = "withdraw"
-    description = "asdijso"
-    usage = "{}withdraw <address> <amount>".format(config.prefix)
+    description = "Withdraws from tipping account to address."
+    usage = f"`{config.prefix}withdraw <address> <amount>`"
 
     def check_channel_type(self, channel):
         # Only work in DMs
@@ -249,13 +180,162 @@ class WithdrawCommand(Command):
         await self.client.send_message(msg.channel, t.withdrawal_completed_message)
 
 @command
-class TipsCommand(Command):
-    name = "tips"
-    description = "ajsoidjf"
+class TipCommand(Command):
+    name = "tip"
+    description = "Tip KekCoins to another user."
+    usage = f"`{config.prefix}tip @<user> <amount>`"
+
+    async def execute(self, msg, args):
+        await self.client.send_typing(msg.channel)
+
+        # Ensure proper argument amount
+        if len(args) != 2:
+            await self.client.send_message(msg.channel, t.usage_message.format(usage=self.usage))
+            return
+        user_tag = args[0]
+        amount = args[1]
+
+        # Ensure valid user tag
+        if len(msg.mentions) != 1:
+            await self.client.send_message(msg.channel, t.usage_message.format(usage=self.usage))
+            return
+        if msg.mentions[0].mention.replace('!', '') != user_tag.replace('!', ''): # Tags sometimes have ! in them
+            await self.client.send_message(msg.channel, t.usage_message.format(usage=self.usage))
+            return
+
+        # print(msg.mentions[0].mention)
+        # print(user_tag)
+
+        # Set receiving user
+        receiver = msg.mentions[0]
+
+        # Ensure provided amount is a valid float number
+        try:
+            amount = float(amount)
+        except:
+            await self.client.send_message(msg.channel, t.usage_message.format(usage=self.usage))
+            return
+
+        # Ensure the user of the command has a registered tipping account
+        sender_address = database.get_deposit_address(msg.author)
+        if sender_address == False:
+            await self.client.send_message(msg.channel,
+                t.no_tipping_account_exists_message.format(username_tag=msg.author.mention, prefix=config.prefix)
+            )
+            return
+
+        # Ensure user has enough funds to withdraw specified amount
+        if not wallet.can_withdraw_amount(amount, sender_address):
+            await self.client.send_message(msg.channel, t.cant_withdraw_amount_message)
+            return
+
+        # Ensure the receiver has a registered tipping account
+        receiver_address = database.get_deposit_address(receiver)
+        if receiver_address == False:
+            await self.client.send_message(msg.channel,
+                t.no_tipping_account_exists_message.format(username_tag=receiver.mention, prefix=config.prefix)
+            )
+            return
+
+        # Finally, perform withdrawal
+        try:
+            wallet.make_transaction(sender_address, receiver_address, amount)
+        except:
+            # If it failed, say so
+            await self.client.send_message(msg.channel, t.tip_failed_message)
+            return
+
+        # Add tip to database
+        database.add_tip(msg.author, receiver, amount)
+
+        # Announce completed tip
+        await self.client.send_message(msg.channel, t.tip_completed_message)
+
+@command
+class DepositsCommand(Command):
+    name = "deposits"
+    description = "Displays deposit history of tipping account."
+    usage = f"`{config.prefix}deposits`"
 
     def check_channel_type(self, channel):
         # Only work in DMs
-        return channel.type == ChannelType.text
+        return channel.is_private
+
+    async def execute(self, msg, args):
+        await self.client.send_typing(msg.channel)
+
+        # Ensure the user of the command has a registered tipping account
+        address = database.get_deposit_address(msg.author)
+        if address == False:
+            await self.client.send_message(msg.channel,
+                t.no_tipping_account_exists_message.format(username_tag=msg.author.mention, prefix=config.prefix)
+            )
+            return
+
+        try:
+            deposits = wallet.get_deposits(address)
+            if type(deposits) is list:
+                if len(deposits) > 0:
+                    # All information retrieved correctly, display list
+                    await self.client.send_message(msg.channel,
+                        t.deposit_history_message.format(
+                            deposits='\n'.join(deposits[:config.deposits_list_limit])
+                        )
+                    )
+                    return
+        except:
+            pass
+
+        # Code falls down here if anything failed - announce failure
+        await self.client.send_message(msg.channel, t.list_deposits_failed_message)
+
+@command
+class WithdrawalsCommand(Command):
+    name = "withdrawals"
+    description = "Displays withdrawal history of tipping account."
+    usage = f"`{config.prefix}withdrawals`"
+
+    def check_channel_type(self, channel):
+        # Only work in DMs
+        return channel.is_private
+
+    async def execute(self, msg, args):
+        await self.client.send_typing(msg.channel)
+
+        # Ensure the user of the command has a registered tipping account
+        address = database.get_deposit_address(msg.author)
+        if address == False:
+            await self.client.send_message(msg.channel,
+                t.no_tipping_account_exists_message.format(username_tag=msg.author.mention, prefix=config.prefix)
+            )
+            return
+
+        try:
+            withdrawals = wallet.get_withdrawals(address)
+            if type(withdrawals) is list:
+                if len(withdrawals) > 0:
+                    # All information retrieved correctly, display list
+                    await self.client.send_message(msg.channel,
+                        t.withdrawal_history_message.format(
+                            withdrawals='\n'.join(withdrawals[:config.withdrawals_list_limit])
+                        )
+                    )
+                    return
+        except:
+            pass
+
+        # Code falls down here if anything failed - announce failure
+        await self.client.send_message(msg.channel, t.list_withdrawals_failed_message)
+
+@command
+class TipsCommand(Command):
+    name = "tips"
+    description = "Displays tipping history of tipping account, both sent and received."
+    usage = f"`{config.prefix}tips`"
+
+    def check_channel_type(self, channel):
+        # Only work in DMs
+        return channel.is_private
 
     async def execute(self, msg, args):
         await self.client.send_typing(msg.channel)
@@ -309,89 +389,14 @@ class TipsCommand(Command):
 
         try:
             await self.client.send_message(msg.channel, embed=embed)
-        except Exception: # TODO REMOVE
-            traceback.print_exc()
+        except:
             await self.client.send_message(msg.channel, t.list_tips_failed_message)
-
-@command
-class WithdrawalsCommand(Command):
-    name = "withdrawals"
-    description = "ajsdofi"
-
-    def check_channel_type(self, channel):
-        # Only work in DMs
-        return channel.is_private
-
-    async def execute(self, msg, args):
-        await self.client.send_typing(msg.channel)
-
-        # Ensure the user of the command has a registered tipping account
-        address = database.get_deposit_address(msg.author)
-        if address == False:
-            await self.client.send_message(msg.channel,
-                t.no_tipping_account_exists_message.format(username_tag=msg.author.mention, prefix=config.prefix)
-            )
-            return
-
-        try:
-            withdrawals = wallet.get_withdrawals(address)
-            if type(withdrawals) is list:
-                if len(withdrawals) > 0:
-                    # All information retrieved correctly, display list
-                    await self.client.send_message(msg.channel,
-                        t.withdrawal_history_message.format(
-                            withdrawals='\n'.join(withdrawals[:config.withdrawals_list_limit])
-                        )
-                    )
-                    return
-        except:
-            pass
-
-        # Code falls down here if anything failed - announce failure
-        await self.client.send_message(msg.channel, t.list_withdrawals_failed_message)
-
-@command
-class DepositsCommand(Command):
-    name = "deposits"
-    description = "asjdofi"
-
-    def check_channel_type(self, channel):
-        # Only work in DMs
-        return channel.is_private
-
-    async def execute(self, msg, args):
-        await self.client.send_typing(msg.channel)
-
-        # Ensure the user of the command has a registered tipping account
-        address = database.get_deposit_address(msg.author)
-        if address == False:
-            await self.client.send_message(msg.channel,
-                t.no_tipping_account_exists_message.format(username_tag=msg.author.mention, prefix=config.prefix)
-            )
-            return
-
-        try:
-            deposits = wallet.get_deposits(address)
-            if type(deposits) is list:
-                if len(deposits) > 0:
-                    # All information retrieved correctly, display list
-                    await self.client.send_message(msg.channel,
-                        t.deposit_history_message.format(
-                            deposits='\n'.join(deposits[:config.deposits_list_limit])
-                        )
-                    )
-                    return
-        except:
-            pass
-
-        # Code falls down here if anything failed - announce failure
-        await self.client.send_message(msg.channel, t.list_deposits_failed_message)
 
 @command
 class BetCommand(Command):
     name = "bet"
-    description = "ajsdij"
-    usage = "{}bet <amount>".format(config.prefix)
+    description = "Bet your coins and try your luck!"
+    usage = f"`{config.prefix}bet <amount>`"
 
     def __init__(self, client):
         super().__init__(client)
@@ -399,9 +404,6 @@ class BetCommand(Command):
         if address == False:
             address = wallet.create_deposit_address(client.user)
         self.bot_address = address
-
-    def check_channel_type(self, channel):
-        return channel.type == ChannelType.text or channel.is_private
 
     def _generate_number_array(self):
         nums = []
@@ -477,9 +479,8 @@ class BetCommand(Command):
             else:
                 # If they DID win, add their payout to their account
                 wallet.make_transaction(self.bot_address, address, payout)
-        except Exception: # TODO REMOVE
-            traceback.print_exc()
+        except:
             # On the off-chance something went wrong, say so and abort
-            await self.client.send_message(msg.channel, templates.bet_failed_message)
+            await self.client.send_message(msg.channel, t.bet_failed_message)
 
         await self.client.send_message(msg.channel, send)

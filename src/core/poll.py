@@ -1,14 +1,14 @@
 from discord import Embed
 
 import config
-import templates
+import templates as t
 
 class PollSelection():
     def __init__(self, str, number):
         self.str = str
         self.number = number
         self.voters = []
-        self.emoji = templates.number_emojis[number]
+        self.emoji = t.number_emojis[number]
         self.is_winner = False
 
     @property
@@ -30,7 +30,7 @@ class Poll():
         return arr
 
     def _get_options_string(self):
-        number_emojis = templates.number_emojis
+        number_emojis = t.number_emojis
         str = ''
         for i in range(len(self.selections)):
             if i != 0:
@@ -87,13 +87,13 @@ class Poll():
         try:
             embed = Embed(
                 title = self.question,
-                description = templates.poll_preview_description,
+                description = t.poll_preview_description,
                 color = config.embed_color
             ).add_field(
                 name = "Options",
                 value = self._get_options_string()
             ).set_footer(
-                text = templates.poll_footer_text.format(
+                text = t.poll_footer_text.format(
                     username = self.created_by.nick if (self.created_by.nick != None) else self.created_by.name
                 )
             )
@@ -126,7 +126,7 @@ class Poll():
                 description = description,
                 color = config.embed_color
             ).set_footer(
-                text = templates.poll_footer_text.format(
+                text = t.poll_footer_text.format(
                     username = self.created_by.nick if (self.created_by.nick != None) else self.created_by.name
                 )
             )
@@ -159,13 +159,13 @@ class Poll():
         try:
             embed = Embed(
                 title = self.question,
-                description = templates.poll_description if is_active else templates.poll_closed_description,
+                description = t.poll_description if is_active else t.poll_closed_description,
                 color = config.embed_color
             ).add_field(
                 name = "Options",
                 value = self._get_options_string()
             ).set_footer(
-                text = templates.poll_footer_text.format(
+                text = t.poll_footer_text.format(
                     username = self.created_by.nick if (self.created_by.nick != None) else self.created_by.name
                 )
             )

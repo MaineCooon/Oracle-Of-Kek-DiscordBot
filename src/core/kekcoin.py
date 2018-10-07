@@ -2,6 +2,7 @@ import ccxt
 import requests
 from random import randint
 
+import core.wallet as wallet
 from config import cryptopia_api_key
 
 cryptopia = ccxt.cryptopia()
@@ -50,10 +51,10 @@ class KekCoin():
     @property
     def blockchain(self):
         block_count = float( requests.get("{}/getblockcount".format(exp_url)).text )
-        staking_weight = 'TBA'
-        staking_reward = 'TBA'
+        staking_weight = wallet.get_staking_weight()
+        staking_reward = wallet.get_staking_reward()
         difficulty = float( requests.get("{}/getdifficulty".format(exp_url)).text )
-        blockchain_size = 'TBA'
+        blockchain_size = wallet.get_blockchain_size()
 
         blockchain_info = {
             'block_count': block_count,
