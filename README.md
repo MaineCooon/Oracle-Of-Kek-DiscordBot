@@ -278,6 +278,7 @@ All configuration settings are read from a file named `config.py`.  File MUST ha
 # Adding To Servers
 
 **Required Privileges:**
+
 Bot must have at minimum the following privileges in a server to be able to perform all functions:
 * Change Nickname
 * View Channels
@@ -287,9 +288,13 @@ Bot must have at minimum the following privileges in a server to be able to perf
 * Attach Files
 * Read Message History
 * Add Reactions
+
 **Join Link:**
+
 Minimum Permissions: `https://discordapp.com/api/oauth2/authorize?client_id=<your_client_id>&permissions=67238976&scope=bot`
+
 Full Permissions: `https://discordapp.com/api/oauth2/authorize?client_id=<your_client_id>&permissions=8&scope=bot`
+
 **Other:**
 * Server must have at least one text channel.
 
