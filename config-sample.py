@@ -34,3 +34,9 @@ tip_list_limit = 5
 bet_payout_dubs = 7
 bet_payout_trips = 70
 bet_payout_quads = 500
+
+kekcoin_rpc_config = {
+	"RPC_USER" : "user",
+	"RPC_PASS" : "pass",
+	"RPC_PORT" : "13377"
+}

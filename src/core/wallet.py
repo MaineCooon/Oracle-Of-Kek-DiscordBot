@@ -1,6 +1,10 @@
 import core.database as database
+from bitcoinrpc.authproxy import AuthServiceProxy
+from config import kekcoin_rpc_config
+import os
 
-### Debug/testing only commands
+# Debug/testing only commands
+
 
 class WalletDebug():
     def __init__(self):
@@ -84,50 +88,134 @@ class WalletDebug():
             'twelve deposit'
         ]
 
+
 debug = WalletDebug()
 
-### END
+# END
+
 
 def get_staking_weight():
-    return "TBA"
+    """
+    Method used to get Kekcoin steaking info  
+    Returns:
+            getinfo output (dict)
+    """
+    rpc = AuthServiceProxy(("http://%s:%s@127.0.0.1:%s/") %
+                           (kekcoin_rpc_config['RPC_USER'], kekcoin_rpc_config['RPC_PASS'], kekcoin_rpc_config['RPC_PORT']))
+
+    stakinginfo = rpc.getstakinginfo()
+    return '{:,.2f}'.format(float(stakinginfo['netstakeweight']) / 1e8)
+
+
+def getSubsidy(self, blockcount):
+    if blockcount <= 10000:
+        return 50
+    elif blockcount <= 20000:
+        return 25
+    elif blockcount <= 30000:
+        return 10
+    elif blockcount <= 100000:
+        return 5
+    elif blockcount <= 200000:
+        return 2.5
+    else:
+        return 1
+
 
 def get_staking_reward():
-    return "TBA"
+
+    rpc = AuthServiceProxy(("http://%s:%s@127.0.0.1:%s/") %
+                           (kekcoin_rpc_config['RPC_USER'], kekcoin_rpc_config['RPC_PASS'], kekcoin_rpc_config['RPC_PORT']))
+
+    info = rpc.getinfo()
+    stakinginfo = rpc.getstakinginfo()
+
+    return '{:.2f}'.format(100 * (1440 * getSubsidy(int(info['blocks'])) * 365) / (float(stakinginfo['netstakeweight']) / 1e8))
+
 
 def get_blockchain_size():
-    return "TBA"
+
+    blockchain_size = 0
+    for i in range(10):
+        if os.path.isfile('/root/.kekcoin/blocks/blk0000%s.dat' % str(i)):
+            file_info = os.stat('/root/.kekcoin/blocks/blk0000%s.dat' % str(i))
+            file_size = file_info.st_size
+            for sizes in ['bytes', 'KB', 'MB', 'GB']:
+                if file_size < 1024.0:
+                    blockchain_size = "%.1f %s" % (file_size, sizes)
+                    break
+                file_size /= 1024.0
+
+    return '{}'.format(blockchain_size)
+
 
 # Returns given user's current KekBot balance as a float
 def get_balance(user):
-    # address = database.get_deposit_address(user)
-    return debug.get_balance(user)
+
+    rpc = AuthServiceProxy(("http://%s:%s@127.0.0.1:%s/") %
+                           (kekcoin_rpc_config['RPC_USER'], kekcoin_rpc_config['RPC_PASS'], kekcoin_rpc_config['RPC_PORT']))
+
+    address = database.get_deposit_address(user)
+
+    utxos = rpc.listunspent()
+    user_utxos = []
+    for utxo in utxos:
+        if utxo['address'] == address:
+            user_utxos.append(utxo)
+
+    return sum([utxo['amount'] for utxo in user_utxos])
+
+    # return debug.get_balance(user)
 
 # Generates a KekBot deposit address
 # Returns deposit address string for use
+
+
 def create_deposit_address(user):
-    # database.set_deposit_address(user, address)
-    return debug.create_deposit_address(user)
+
+    rpc = AuthServiceProxy(("http://%s:%s@127.0.0.1:%s/") %
+                           (kekcoin_rpc_config['RPC_USER'], kekcoin_rpc_config['RPC_PASS'], kekcoin_rpc_config['RPC_PORT']))
+
+    address = rpc.getnewaddress()
+
+    database.set_deposit_address(user, address)
+
+    return str(address)
+
+    # return debug.create_deposit_address(user)
 
 # Returns a LIST of transaction ids as strings
+
+
 def get_withdrawals(address):
+    
+
     return debug.get_withdrawals()
 
 # Returns a LIST of transaction ids as strings
+
+
 def get_deposits(address):
     return debug.get_deposits()
 
 # Perform transaction
 # Doesn't return anything.  Already wrapped in a try/except block, so should
 #    simply throw an exception if failed
+
+
 def make_transaction(sender_address, receiver_address, amount):
     debug.make_transaction(sender_address, receiver_address, amount)
 
 # Return True if the address is valid to deposit to, else False
 # Used for arg-checking commands
+
+
 def is_valid_address(address):
     return debug.is_valid_address(address)
 
 # Return True if the given address has enough to have amount withdrawn from it,
 #    else False
+
+
 def can_withdraw_amount(amount, address):
     return debug.can_withdraw_amount(amount, address)
